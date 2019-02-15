@@ -5,24 +5,30 @@ sudo apt-get -y upgrade >> /dev/null
 
 echo "update upgrade done"
 
-wget https://dl.google.com/go/go1.11.4.linux-amd64.tar.gz >> /dev/null
-
-sudo mv go1.11.4.linux-amd64.tar.gz /usr/local
-cd /usr/local
-sudo tar -xvf go1.11.4.linux-amd64.tar.gz >> /dev/null
-#sudo mv go /usr/local
-
-echo "tar extracted"
-
-echo "PATH=\"\$HOME/bin:\$HOME/.local/bin:\$PATH"" >> ~/.profile
-
-echo "export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin" >> ~/.profile
-
-echo "export PATH=\$PATH:/home/user/go/bin" >> ~/.profile
-
-source ~/.profile
-
 go version
+if [ $? -eq 0 ]; then
+    echo "PASS"
+
+else
+    wget https://dl.google.com/go/go1.11.4.linux-amd64.tar.gz >> /dev/null
+
+    sudo mv go1.11.4.linux-amd64.tar.gz /usr/local
+    cd /usr/local
+    sudo tar -xvf go1.11.4.linux-amd64.tar.gz >> /dev/null
+    #sudo mv go /usr/local
+
+    echo "tar extracted"
+
+    echo "PATH=\"\$HOME/bin:\$HOME/.local/bin:\$PATH\"" >> ~/.profile
+
+    echo "export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin" >> ~/.profile
+
+    echo "export PATH=\$PATH:/home/user/go/bin" >> ~/.profile
+
+    source ~/.profile
+
+    go version
+fi
 
 go get -u google.golang.org/grpc
 echo "go get grpc done"
@@ -42,7 +48,7 @@ echo "unzip protoc done"
 go get -u github.com/golang/protobuf/protoc-gen-go
 echo "go get protobuf done"
 
-
+cd ~
 # Optional: change owner
 sudo chown -R $USER go
 
