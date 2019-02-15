@@ -4,7 +4,7 @@ sudo apt-get update >> /dev/null
 sudo apt-get -y upgrade >> /dev/null
 
 echo "update upgrade done"
-
+source ~/.profile
 go version
 if [ $? -eq 0 ]; then
     echo "PASS"
@@ -36,24 +36,25 @@ echo "go get grpc done"
 
 
 # Make sure you grab the latest version
-curl -OL https://github.com/google/protobuf/releases/download/v3.7.0/protoc-3.7.0-linux-x86_64.zip
+# Make sure you grab the latest version
+curl -OL https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
 
-
-mv protoc-3.7.0-linux-x86_64.zip /usr/local
-cd /usr/local
 # Unzip
-sudo unzip protoc-3.7.0-linux-x86_64.zip -d protoc3 >> /dev/null
-echo "unzip protoc done"
+unzip protoc-3.2.0-linux-x86_64.zip -d protoc3
 
-go get -u github.com/golang/protobuf/protoc-gen-go
-echo "go get protobuf done"
+# Move protoc to /usr/local/bin/
+sudo mv protoc3/bin/* /usr/local/bin/
 
+# Move protoc3/include to /usr/local/include/
+sudo mv protoc3/include/* /usr/local/include/
+
+# Optional: change owner
+sudo chown user /usr/local/bin/protoc
+sudo chown -R user /usr/local/include/google
 cd ~
 # Optional: change owner
 sudo chown -R $USER go
 
-sudo chown $USER /usr/local/bin/protoc 
-sudo chown -R $USER /usr/local/include/google 
 
 sudo apt-get remove docker docker-engine docker.io containerd runc >> /dev/null
 
@@ -76,4 +77,3 @@ sudo apt-get update >> /dev/null
 sudo apt-get -y install docker-ce docker-ce-cli containerd.io >> /dev/null
 
 sudo docker run hello-world 
-
