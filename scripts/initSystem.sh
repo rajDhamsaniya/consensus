@@ -14,14 +14,11 @@ sudo tar -xvf go1.11.4.linux-amd64.tar.gz >> /dev/null
 
 echo "tar extracted"
 
-tmp="PATH="$HOME/bin:$HOME/.local/bin:$PATH""
-echo $tmp >> ~/.profile
+echo "PATH=\"\$HOME/bin:\$HOME/.local/bin:\$PATH"" >> ~/.profile
 
-tmp="export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin"
-echo $tmp >> ~/.profile
+echo "export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin" >> ~/.profile
 
-tmp="export PATH=$PATH:/home/user/go/bin"
-echo $tmp >> ~/.profile
+echo "export PATH=\$PATH:/home/user/go/bin" >> ~/.profile
 
 source ~/.profile
 
