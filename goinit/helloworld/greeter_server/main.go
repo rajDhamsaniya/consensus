@@ -34,8 +34,8 @@ import (
 )
 
 const (
-	address     = "127.0.0.1:50052"
-	defaultName = "10.0.2.15"
+	address     = "10.20.24.26:50052"
+	defaultName = "10.0.2.15:50051"
 	port        = ":50051"
 	port2       = ":50052"
 )
@@ -69,7 +69,7 @@ func registerService() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	r, err := c.Register(ctx, &pb2.Registration{Name: name, Ipv4: address, Port: port})
+	r, err := c.Register(ctx, &pb2.Registration{Name: name, Ipv4: defaultName, Port: port})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}

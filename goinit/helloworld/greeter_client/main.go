@@ -26,12 +26,14 @@ import (
 	"sync"
 	"time"
 
+	pb2 "GitHub/grpc/discovery/registry"
 	pb "GitHub/grpc/goinit/helloworld/helloworld"
 
 	"google.golang.org/grpc"
 )
 
 const (
+	address     = "10.20.24.26:50052"
 	defaultName = "world"
 )
 
@@ -59,18 +61,38 @@ func connServer(address string, wg *sync.WaitGroup) {
 
 }
 
+func fetchServerList() []*pb2.Registration {
+	var peer = make([](*pb2.Registration), 0)
+	fetchAll := true
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb2.NewRegistryClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r, err := c.FetchServiceLocation(ctx, &pb2.RegistrationFetchRequest{Registrations: peer, FetchAll: fetchAll})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+
+	fmt.Println(r)
+
+	return r.Registrations
+}
+
 func main() {
+	var peerList = make([](*pb2.Registration), 0)
+	peerList = fetchServerList()
 
 	var wg sync.WaitGroup
 
-	var add [2]string
-
-	add[0] = "localhost:50051"
-	add[1] = "10.20.24.13:50051"
-	wg.Add(1)
-	go connServer(add[0], &wg)
-	//wg.Add(1)
-	go connServer(add[1], &wg)
+	wg.Add(2)
+	for _, peer := range peerList {
+		go connServer(peer.Ipv4, &wg)
+	}
 
 	wg.Wait()
 	fmt.Println("done")
