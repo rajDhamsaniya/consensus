@@ -1,4 +1,4 @@
-
+#!/bin/bash
 sudo apt-get update >> /dev/null
 
 sudo apt-get -y upgrade >> /dev/null
@@ -7,54 +7,54 @@ echo "update upgrade done"
 
 wget https://dl.google.com/go/go1.11.4.linux-amd64.tar.gz >> /dev/null
 
-sudo mv go1.11.4.linux-amd64.tar.gz /usr/local >> /dev/null
-sudo cd /usr/local >> /dev/null
+sudo mv go1.11.4.linux-amd64.tar.gz /usr/local
+cd /usr/local
 sudo tar -xvf go1.11.4.linux-amd64.tar.gz >> /dev/null
 #sudo mv go /usr/local
 
 echo "tar extracted"
 
-tmp="export GOROOT=/usr/local/go"
+tmp="PATH="$HOME/bin:$HOME/.local/bin:$PATH""
 echo $tmp >> ~/.profile
 
-tmp="export GOPATH=$HOME/go"
+tmp="export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin"
 echo $tmp >> ~/.profile
 
-tmp="export PATH=$GOPATH/bin:$GOROOT/bin:$PATH"
+tmp="export PATH=$PATH:/home/user/go/bin"
 echo $tmp >> ~/.profile
 
 source ~/.profile
 
 go version
 
-go get -u google.golang.org/grpc >> /dev/null
+go get -u google.golang.org/grpc
 echo "go get grpc done"
 
 
-go get -u github.com/golang/protobuf/protoc-gen-go >> /dev/null
-echo "go get protobuf done"
 
-#! /bin/bash
 # Make sure you grab the latest version
-curl -OL https://github.com/google/protobuf/releases/download/v3.6.1/protoc-3.6.1-linux-x86_64.zip
-https://github.com/google/protobuf/releases/download/v3.6.1/protoc-3.6.1-linux-x86_64.zip >> /dev/null
+curl -OL https://github.com/google/protobuf/releases/download/v3.7.0/protoc-3.7.0-linux-x86_64.zip
+
+
+mv protoc-3.7.0-linux-x86_64.zip /usr/local
+cd /usr/local
 # Unzip
-unzip protoc-3.6.1-linux-x86_64.zip -d protoc3 >> /dev/null
+sudo unzip protoc-3.7.0-linux-x86_64.zip -d protoc3 >> /dev/null
 echo "unzip protoc done"
 
-# Move protoc to /usr/local/bin/
-sudo mv protoc3/bin/* /usr/local/bin/ >> /dev/null
+go get -u github.com/golang/protobuf/protoc-gen-go
+echo "go get protobuf done"
 
-# Move protoc3/include to /usr/local/include/
-sudo mv protoc3/include/* /usr/local/include/ >> /dev/null
 
 # Optional: change owner
-sudo chown $USER /usr/local/bin/protoc >> /dev/null
-sudo chown -R $USER /usr/local/include/google >> /dev/null
+sudo chown -R $USER go
+
+sudo chown $USER /usr/local/bin/protoc 
+sudo chown -R $USER /usr/local/include/google 
 
 sudo apt-get remove docker docker-engine docker.io containerd runc >> /dev/null
 
-sudo apt-get install \
+sudo apt-get -y install \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -70,19 +70,7 @@ sudo add-apt-repository \
 
 sudo apt-get update >> /dev/null
 
-sudo apt-get install docker-ce docker-ce-cli containerd.io >> /dev/null
+sudo apt-get -y install docker-ce docker-ce-cli containerd.io >> /dev/null
 
-#sudo docker run hello-world >> /dev/null
+sudo docker run hello-world 
 
-
-echo "docker complete vs code start"
-curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg >> /dev/null
-
-sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg >> /dev/null
-
-sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list' >> /dev/null
-
-sudo apt update >> /dev/null
-
-sudo apt install code >> /dev/null
-echo "vs code installed"

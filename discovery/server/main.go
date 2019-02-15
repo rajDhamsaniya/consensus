@@ -1,11 +1,11 @@
 package main
 
 import (
+	pb "GitHub/grpc/discovery/registry"
 	"context"
 	"fmt"
 	"log"
 	"net"
-	pb "study/discovery/registry"
 
 	"google.golang.org/grpc"
 )

@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	pb "study/goinit/helloworld/helloworld"
+	pb "GitHub/grpc/goinit/helloworld/helloworld"
 
 	"google.golang.org/grpc"
 )

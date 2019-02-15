@@ -27,8 +27,8 @@ import (
 	"os"
 	"time"
 
-	pb2 "study/discovery/registry"
-	pb "study/goinit/helloworld/helloworld"
+	pb2 "GitHub/grpc/discovery/registry"
+	pb "GitHub/grpc/goinit/helloworld/helloworld"
 
 	"google.golang.org/grpc"
 )
