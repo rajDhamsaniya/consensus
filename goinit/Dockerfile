@@ -1,4 +1,4 @@
-FROM golang:1.11
+FROM golang:1.11 AS build-env
 
 RUN apt-get update && \
     apt-get -y install git unzip build-essential autoconf libtool
@@ -18,12 +18,29 @@ RUN go get google.golang.org/grpc
 
 RUN go get github.com/golang/protobuf/protoc-gen-go
 
-RUN ls -la
+
 
 WORKDIR /helloworld
 
 COPY . /helloworld
 
+RUN pwd
+
+RUN ls -la
+
 RUN protoc -I helloworld/ helloworld/helloworld.proto --go_out=plugins=grpc:helloworld
 
-CMD ["go", "run", "helloworld/greeter_server/main.go"]
+RUN go build -o server helloworld/greeter_server/main.go
+
+
+
+# Making image
+FROM debian:latest AS host
+#RUN apt-get install ca-certificates
+
+WORKDIR /root/
+
+COPY --from=build-env /helloworld/server .
+RUN chmod +x server
+EXPOSE 50053
+ENTRYPOINT [ "./server" ]
