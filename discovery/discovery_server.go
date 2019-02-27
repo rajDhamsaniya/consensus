@@ -1,7 +1,7 @@
 package main
 
 import (
-	pb "GitHub/grpc/discovery/registry"
+	pb "GitHub/grpc/protoc/discovery"
 	"context"
 	"fmt"
 	"log"

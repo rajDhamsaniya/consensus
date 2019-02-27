@@ -16,51 +16,35 @@
  *
  */
 
-//go:generate protoc -I ../helloworld --go_out=plugins=grpc:../helloworld ../helloworld/helloworld.proto
-
 package main
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"net"
 	"os"
+	"sync"
 	"time"
 
-	pb2 "GitHub/grpc/discovery/registry"
-	pb "GitHub/grpc/goinit/helloworld/helloworld"
+	pb2 "GitHub/grpc/protoc/discovery"
+	pb "GitHub/grpc/protoc/helloworld"
 
 	"google.golang.org/grpc"
 )
 
 const (
 	address     = "10.20.24.26:50052"
-	defaultName = "10.0.2.15:50051"
-	port        = ":50051"
-	port2       = ":50052"
+	defaultName = "world"
 )
 
-// server is used to implement helloworld.GreeterServer.
-type server struct{}
-
-// SayHello implements helloworld.GreeterServer
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	log.Printf("Received: %v", in.Name)
-	time.Sleep(2 * time.Second)
-	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
-}
-
-func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	return &pb.HelloReply{Message: "Hello again " + in.Name}, nil
-}
-
-func registerService() {
+func connServer(address string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb2.NewRegistryClient(conn)
+	c := pb.NewGreeterClient(conn)
 
 	// Contact the server and print out its response.
 	name := defaultName
@@ -69,24 +53,50 @@ func registerService() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	r, err := c.Register(ctx, &pb2.Registration{Name: name, Ipv4: defaultName, Port: port})
+	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("Greeting: %s", r.Message)
+
+}
+
+func fetchServerList() []*pb2.Registration {
+	var peer = make([](*pb2.Registration), 0)
+	fetchAll := true
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb2.NewRegistryClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r, err := c.FetchServiceLocation(ctx, &pb2.RegistrationFetchRequest{Registrations: peer, FetchAll: fetchAll})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+
+	fmt.Println(r)
+
+	return r.Registrations
 }
 
 func main() {
+	var peerList = make([](*pb2.Registration), 0)
+	peerList = fetchServerList()
 
-	registerService()
+	var wg sync.WaitGroup
 
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+	wg.Add(2)
+	for _, peer := range peerList {
+		go connServer(peer.Ipv4, &wg)
 	}
-	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+
+	wg.Wait()
+	fmt.Println("done")
+
+	// Set up a connection to the server.
+
 }
