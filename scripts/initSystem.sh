@@ -56,7 +56,6 @@ cd ~
 sudo chown -R $USER go
 
 
-
 sudo apt-get remove docker docker-engine docker.io containerd runc >> /dev/null
 
 sudo apt-get -y install \
