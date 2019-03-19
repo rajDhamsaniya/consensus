@@ -1,3 +1,2 @@
-# grpc
-grpc testing and trying for distributed system using golang 
-testing Jenkins
+# consensus
+implementation of pBFT with Execute-order-validate architecture
