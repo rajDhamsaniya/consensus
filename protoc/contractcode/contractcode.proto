@@ -1,0 +1,67 @@
+syntax = "proto3";
+package protoc;
+
+import "google/protobuf/empty.proto";
+
+message infoMsg{
+    enum MsgType {
+        SUCESS = 0;
+        ERROR = 1;
+    }
+    
+    string Msg = 1;
+    MsgType type = 2;
+}
+
+message transferMessage{
+
+    string UserId = 1;
+    string FromAccId = 2;
+    string ToAccId = 3;
+    int32 Amount = 4;
+}
+
+message stateInfo {
+
+    enum MsgType {
+        SUCESS = 0;
+        ERROR = 1;
+    }
+    MsgType Msg = 1;
+    bytes Payload = 2;
+    string Sign = 3;
+}
+
+message userInfo {
+
+    string UserId = 1;
+    string UserName = 2;
+    int32 Balance = 3;
+}
+
+message getState {
+    string key = 1;
+}
+
+message putState {
+    string key = 1;
+    bytes value = 2;
+}
+
+message contractInfo {
+	string transaction = 1;
+	bytes args = 2;
+}
+
+message Response {
+	bytes result = 2;
+
+}
+
+
+service Contract{
+
+    rpc InitContract(google.protobuf.Empty) returns (infoMsg) {}
+
+	rpc Invoke(contractInfo) returns (Response) {}
+}

@@ -18,19 +18,23 @@ RUN go get google.golang.org/grpc
 
 RUN go get github.com/golang/protobuf/protoc-gen-go
 
+RUN go get github.com/gogo/protobuf/proto
+
+RUN go get github.com/leesper/couchdb-golang
 
 
-WORKDIR /helloworld
 
-COPY . /helloworld
+WORKDIR /contractcode
+
+COPY ./ /contractcode
 
 RUN pwd
 
 RUN ls -la
 
-RUN protoc -I helloworld/ helloworld/helloworld.proto --go_out=plugins=grpc:helloworld
+RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins=grpc:contractcode
 
-RUN go build -o server helloworld/greeter_server/main.go
+RUN go build -o contract contractcode/contractcode.go
 
 
 
@@ -40,7 +44,7 @@ FROM debian:latest AS host
 
 WORKDIR /root/
 
-COPY --from=build-env /helloworld/server .
-RUN chmod +x server
+COPY --from=build-env /contractcode/contract .
+RUN chmod +x contract
 EXPOSE 50053
-ENTRYPOINT [ "./server" ]
+ENTRYPOINT [ "./contract" ]

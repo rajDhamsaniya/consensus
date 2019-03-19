@@ -1,11 +1,12 @@
 package main
 
 import (
-	pb "GitHub/grpc/protoc/discovery"
 	"context"
 	"fmt"
 	"log"
 	"net"
+
+	pb "../protoc/discovery"
 
 	"google.golang.org/grpc"
 )
@@ -55,11 +56,13 @@ func (s *server) FetchServiceLocation(ctx context.Context, rfr *pb.RegistrationF
 }
 
 func main() {
+	fmt.Println("starting discovery")
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
+	fmt.Println("starting discovery")
 	pb.RegisterRegistryServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

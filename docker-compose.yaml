@@ -1,0 +1,39 @@
+version: '3.3'
+services: 
+  discovery:
+    build:
+      context: ./
+      dockerfile: ./discovery/Dockerfile
+      args:
+        buildno: 1
+    ports: 
+        - "50052:50052"
+
+  server:
+    build: 
+      context: ./
+      dockerfile: ./helloworld/Dockerfile
+      args: 
+        buildno: 2
+    ports: 
+      - "50051:50051"
+    # restart: always
+
+  contract:
+    build:
+      context: ./
+      dockerfile: ./contractcode/Dockerfile
+      args:
+        buildno: 3
+    ports: 
+      - "50053:50053"
+
+  # db:
+  #   image: couchdb:2.3.0
+  #   ports: 5984
+  #   networks: 
+  #     - backend
+  #   deploy:
+  #     replicas: 1
+  #     restart_policy:
+  #       condition: on-failure

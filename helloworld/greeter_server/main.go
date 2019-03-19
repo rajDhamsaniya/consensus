@@ -22,22 +22,28 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
 	"time"
 
-	pb2 "GitHub/grpc/protoc/discovery"
-	pb "GitHub/grpc/protoc/helloworld"
+	pb3 "../../protoc/contractcode"
+	pb2 "../../protoc/discovery"
+	pb "../../protoc/helloworld"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 )
 
 const (
-	address     = "10.20.24.26:50052"
-	defaultName = "10.0.2.15:50051"
-	port        = ":50051"
-	port2       = ":50052"
+	registryAddress = "10.0.2.15"
+	contractAddress = "10.0.2.15"
+	defaultName     = "10.0.2.15"
+	peerPort        = ":50051"
+	contractPort    = ":50053"
+	registryPort    = ":50052"
+	sign            = "Sign"
 )
 
 // server is used to implement helloworld.GreeterServer.
@@ -55,7 +61,7 @@ func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.He
 }
 
 func registerService() {
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	conn, err := grpc.Dial((registryAddress + registryPort), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -69,18 +75,69 @@ func registerService() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	r, err := c.Register(ctx, &pb2.Registration{Name: name, Ipv4: defaultName, Port: port})
+	r, err := c.Register(ctx, &pb2.Registration{Name: name, Ipv4: defaultName, Port: peerPort}, grpc.FailFast(false))
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("Greeting: %s", r.Message)
 }
 
+func (s *server) ExecuteTransaction(ctx context.Context, in *pb.Executetx) (*pb.ExecResponse, error) {
+
+	conn, err := grpc.Dial((contractAddress + contractPort), grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+
+	c := pb3.NewContractClient(conn)
+
+	// Contact the server and print out its response.
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	r, err := c.Invoke(ctx, &pb3.ContractInfo{Transaction: in.Tx, Args: in.Args}, grpc.FailFast(false))
+	fmt.Println(r)
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	return &pb.ExecResponse{Sign: sign, Result: r.Result}, nil
+
+}
+
+func initContract() {
+
+	conn, err := grpc.Dial((contractAddress + contractPort), grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+
+	c := pb3.NewContractClient(conn)
+
+	// Contact the server and print out its response.
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	r, err := c.InitContract(ctx, &empty.Empty{}, grpc.FailFast(false))
+	fmt.Println(r)
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	if r.Type == pb3.InfoMsg_SUCESS {
+		fmt.Println("Contact successfully invoked")
+	}
+
+}
+
 func main() {
 
 	registerService()
+	initContract()
 
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", peerPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

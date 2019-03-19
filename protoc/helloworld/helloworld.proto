@@ -20,13 +20,28 @@ option java_outer_classname = "HelloWorldProto";
 
 package helloworld;
 
+// import "study/GitHub/grpc/protoc/contractcode/contractcode.proto";
+
 // The greeting service definition.
 service Greeter {
   // Sends a greeting
   rpc SayHello (HelloRequest) returns (HelloReply) {}
   // Sends another greeting
   rpc SayHelloAgain (HelloRequest) returns (HelloReply) {}
+
+  rpc ExecuteTransaction(Executetx) returns(ExecResponse) {}
 }
+
+message Executetx {
+	string tx = 1;
+	bytes Args = 2;
+}
+
+message ExecResponse {
+	string Sign =1;
+	bytes result=2;
+}
+
 
 // The request message containing the user's name.
 message HelloRequest {
