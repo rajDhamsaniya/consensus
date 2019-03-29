@@ -73,6 +73,34 @@ func (StateInfo_MsgType) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_da7a8b338724b80b, []int{2, 0}
 }
 
+type TransactionResponse_QueryType int32
+
+const (
+	TransactionResponse_GETSTATE TransactionResponse_QueryType = 0
+	TransactionResponse_PUTSTATE TransactionResponse_QueryType = 1
+	TransactionResponse_DELSTATE TransactionResponse_QueryType = 2
+)
+
+var TransactionResponse_QueryType_name = map[int32]string{
+	0: "GETSTATE",
+	1: "PUTSTATE",
+	2: "DELSTATE",
+}
+
+var TransactionResponse_QueryType_value = map[string]int32{
+	"GETSTATE": 0,
+	"PUTSTATE": 1,
+	"DELSTATE": 2,
+}
+
+func (x TransactionResponse_QueryType) String() string {
+	return proto.EnumName(TransactionResponse_QueryType_name, int32(x))
+}
+
+func (TransactionResponse_QueryType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_da7a8b338724b80b, []int{9, 0}
+}
+
 type InfoMsg struct {
 	Msg                  string          `protobuf:"bytes,1,opt,name=Msg,proto3" json:"Msg,omitempty"`
 	Type                 InfoMsg_MsgType `protobuf:"varint,2,opt,name=type,proto3,enum=protoc.InfoMsg_MsgType" json:"type,omitempty"`
@@ -294,7 +322,8 @@ func (m *UserInfo) GetBalance() int32 {
 }
 
 type GetState struct {
-	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Key                  string   `protobuf:"bytes,1,opt,name=Key,proto3" json:"Key,omitempty"`
+	Version              string   `protobuf:"bytes,2,opt,name=Version,proto3" json:"Version,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -332,9 +361,16 @@ func (m *GetState) GetKey() string {
 	return ""
 }
 
+func (m *GetState) GetVersion() string {
+	if m != nil {
+		return m.Version
+	}
+	return ""
+}
+
 type PutState struct {
-	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Value                []byte   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	Key                  string   `protobuf:"bytes,1,opt,name=Key,proto3" json:"Key,omitempty"`
+	Value                []byte   `protobuf:"bytes,2,opt,name=Value,proto3" json:"Value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -379,9 +415,56 @@ func (m *PutState) GetValue() []byte {
 	return nil
 }
 
+type DeleteState struct {
+	Key                  string   `protobuf:"bytes,1,opt,name=Key,proto3" json:"Key,omitempty"`
+	Version              string   `protobuf:"bytes,2,opt,name=Version,proto3" json:"Version,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DeleteState) Reset()         { *m = DeleteState{} }
+func (m *DeleteState) String() string { return proto.CompactTextString(m) }
+func (*DeleteState) ProtoMessage()    {}
+func (*DeleteState) Descriptor() ([]byte, []int) {
+	return fileDescriptor_da7a8b338724b80b, []int{6}
+}
+
+func (m *DeleteState) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeleteState.Unmarshal(m, b)
+}
+func (m *DeleteState) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeleteState.Marshal(b, m, deterministic)
+}
+func (m *DeleteState) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeleteState.Merge(m, src)
+}
+func (m *DeleteState) XXX_Size() int {
+	return xxx_messageInfo_DeleteState.Size(m)
+}
+func (m *DeleteState) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeleteState.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeleteState proto.InternalMessageInfo
+
+func (m *DeleteState) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *DeleteState) GetVersion() string {
+	if m != nil {
+		return m.Version
+	}
+	return ""
+}
+
 type ContractInfo struct {
-	Transaction          string   `protobuf:"bytes,1,opt,name=transaction,proto3" json:"transaction,omitempty"`
-	Args                 []byte   `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty"`
+	Transaction          string   `protobuf:"bytes,1,opt,name=Transaction,proto3" json:"Transaction,omitempty"`
+	Args                 []string `protobuf:"bytes,2,rep,name=Args,proto3" json:"Args,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -391,7 +474,7 @@ func (m *ContractInfo) Reset()         { *m = ContractInfo{} }
 func (m *ContractInfo) String() string { return proto.CompactTextString(m) }
 func (*ContractInfo) ProtoMessage()    {}
 func (*ContractInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_da7a8b338724b80b, []int{6}
+	return fileDescriptor_da7a8b338724b80b, []int{7}
 }
 
 func (m *ContractInfo) XXX_Unmarshal(b []byte) error {
@@ -419,7 +502,7 @@ func (m *ContractInfo) GetTransaction() string {
 	return ""
 }
 
-func (m *ContractInfo) GetArgs() []byte {
+func (m *ContractInfo) GetArgs() []string {
 	if m != nil {
 		return m.Args
 	}
@@ -427,7 +510,7 @@ func (m *ContractInfo) GetArgs() []byte {
 }
 
 type Response struct {
-	Result               []byte   `protobuf:"bytes,2,opt,name=result,proto3" json:"result,omitempty"`
+	Result               []byte   `protobuf:"bytes,2,opt,name=Result,proto3" json:"Result,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -437,7 +520,7 @@ func (m *Response) Reset()         { *m = Response{} }
 func (m *Response) String() string { return proto.CompactTextString(m) }
 func (*Response) ProtoMessage()    {}
 func (*Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_da7a8b338724b80b, []int{7}
+	return fileDescriptor_da7a8b338724b80b, []int{8}
 }
 
 func (m *Response) XXX_Unmarshal(b []byte) error {
@@ -465,52 +548,108 @@ func (m *Response) GetResult() []byte {
 	return nil
 }
 
+type TransactionResponse struct {
+	Query                TransactionResponse_QueryType `protobuf:"varint,1,opt,name=Query,proto3,enum=protoc.TransactionResponse_QueryType" json:"Query,omitempty"`
+	Payload              []byte                        `protobuf:"bytes,2,opt,name=Payload,proto3" json:"Payload,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
+	XXX_unrecognized     []byte                        `json:"-"`
+	XXX_sizecache        int32                         `json:"-"`
+}
+
+func (m *TransactionResponse) Reset()         { *m = TransactionResponse{} }
+func (m *TransactionResponse) String() string { return proto.CompactTextString(m) }
+func (*TransactionResponse) ProtoMessage()    {}
+func (*TransactionResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_da7a8b338724b80b, []int{9}
+}
+
+func (m *TransactionResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TransactionResponse.Unmarshal(m, b)
+}
+func (m *TransactionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TransactionResponse.Marshal(b, m, deterministic)
+}
+func (m *TransactionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TransactionResponse.Merge(m, src)
+}
+func (m *TransactionResponse) XXX_Size() int {
+	return xxx_messageInfo_TransactionResponse.Size(m)
+}
+func (m *TransactionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_TransactionResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TransactionResponse proto.InternalMessageInfo
+
+func (m *TransactionResponse) GetQuery() TransactionResponse_QueryType {
+	if m != nil {
+		return m.Query
+	}
+	return TransactionResponse_GETSTATE
+}
+
+func (m *TransactionResponse) GetPayload() []byte {
+	if m != nil {
+		return m.Payload
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterEnum("protoc.InfoMsg_MsgType", InfoMsg_MsgType_name, InfoMsg_MsgType_value)
 	proto.RegisterEnum("protoc.StateInfo_MsgType", StateInfo_MsgType_name, StateInfo_MsgType_value)
+	proto.RegisterEnum("protoc.TransactionResponse_QueryType", TransactionResponse_QueryType_name, TransactionResponse_QueryType_value)
 	proto.RegisterType((*InfoMsg)(nil), "protoc.infoMsg")
 	proto.RegisterType((*TransferMessage)(nil), "protoc.transferMessage")
 	proto.RegisterType((*StateInfo)(nil), "protoc.stateInfo")
 	proto.RegisterType((*UserInfo)(nil), "protoc.userInfo")
 	proto.RegisterType((*GetState)(nil), "protoc.getState")
 	proto.RegisterType((*PutState)(nil), "protoc.putState")
+	proto.RegisterType((*DeleteState)(nil), "protoc.deleteState")
 	proto.RegisterType((*ContractInfo)(nil), "protoc.contractInfo")
-	proto.RegisterType((*Response)(nil), "protoc.Response")
+	proto.RegisterType((*Response)(nil), "protoc.response")
+	proto.RegisterType((*TransactionResponse)(nil), "protoc.transactionResponse")
 }
 
 func init() { proto.RegisterFile("contractcode.proto", fileDescriptor_da7a8b338724b80b) }
 
 var fileDescriptor_da7a8b338724b80b = []byte{
-	// 457 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0x4d, 0x6b, 0xdb, 0x4c,
-	0x10, 0xb6, 0xde, 0xf8, 0x43, 0x9a, 0xd7, 0x24, 0x66, 0x09, 0xa9, 0xea, 0xe6, 0x20, 0xf6, 0x64,
-	0x08, 0x28, 0xa0, 0x9e, 0x7a, 0x4c, 0x53, 0x17, 0x74, 0x70, 0x5b, 0x56, 0x09, 0xf4, 0xba, 0x91,
-	0xc7, 0xc2, 0xb5, 0xbc, 0x2b, 0xb4, 0xab, 0x80, 0xfe, 0x41, 0x7f, 0x76, 0xd9, 0xd5, 0xae, 0x13,
-	0x0a, 0x81, 0x9e, 0x34, 0xcf, 0x7c, 0xec, 0x3c, 0xcf, 0xcc, 0x08, 0x48, 0x29, 0x85, 0x6e, 0x79,
-	0xa9, 0x4b, 0xb9, 0xc5, 0xb4, 0x69, 0xa5, 0x96, 0x64, 0x6a, 0x3f, 0xe5, 0xf2, 0x43, 0x25, 0x65,
-	0x55, 0xe3, 0xad, 0x85, 0x4f, 0xdd, 0xee, 0x16, 0x8f, 0x8d, 0xee, 0x87, 0x24, 0xfa, 0x0b, 0x66,
-	0x7b, 0xb1, 0x93, 0x1b, 0x55, 0x91, 0x05, 0x9c, 0x6d, 0x54, 0x15, 0x07, 0x49, 0xb0, 0x8a, 0x98,
-	0x31, 0xc9, 0x0d, 0x8c, 0x75, 0xdf, 0x60, 0xfc, 0x5f, 0x12, 0xac, 0xce, 0xb3, 0x77, 0x43, 0x49,
-	0x99, 0xba, 0x82, 0x74, 0xa3, 0xaa, 0x87, 0xbe, 0x41, 0x66, 0x93, 0x68, 0x02, 0x33, 0xe7, 0x20,
-	0x00, 0xd3, 0xe2, 0xf1, 0x7e, 0x5d, 0x14, 0x8b, 0x11, 0x89, 0x60, 0xb2, 0x66, 0xec, 0x3b, 0x5b,
-	0x04, 0xb4, 0x87, 0x0b, 0xdd, 0x72, 0xa1, 0x76, 0xd8, 0x6e, 0x50, 0x29, 0x5e, 0x21, 0xb9, 0x82,
-	0xe9, 0xa3, 0xc2, 0x36, 0xdf, 0xba, 0xb6, 0x0e, 0x91, 0x6b, 0x88, 0xbe, 0xb6, 0xf2, 0x78, 0x57,
-	0x96, 0xf9, 0xd6, 0xb6, 0x8f, 0xd8, 0x8b, 0x83, 0xc4, 0x30, 0x7b, 0x90, 0x43, 0xec, 0xcc, 0xc6,
-	0x3c, 0x34, 0xef, 0xdd, 0x1d, 0x65, 0x27, 0x74, 0x3c, 0x4e, 0x82, 0xd5, 0x84, 0x39, 0x44, 0x7f,
-	0x07, 0x10, 0x29, 0xcd, 0x35, 0xe6, 0x62, 0x27, 0xc9, 0xcd, 0x8b, 0xd2, 0xf3, 0xec, 0xbd, 0x97,
-	0x75, 0x8a, 0x9f, 0x84, 0xd9, 0x21, 0xc4, 0x30, 0xfb, 0xc1, 0xfb, 0x5a, 0xf2, 0x81, 0xc8, 0x9c,
-	0x79, 0x48, 0x08, 0x8c, 0x8b, 0x7d, 0x25, 0x1c, 0x07, 0x6b, 0xff, 0xc3, 0x14, 0x7e, 0x42, 0xd8,
-	0x19, 0x91, 0x86, 0xc8, 0x5b, 0xf2, 0x97, 0x10, 0x1a, 0xeb, 0x1b, 0x3f, 0xa2, 0x53, 0x7f, 0xc2,
-	0x86, 0xcf, 0x67, 0x5e, 0x73, 0x51, 0xa2, 0x6d, 0x3c, 0x61, 0x1e, 0xd2, 0x6b, 0x08, 0x2b, 0xd4,
-	0x85, 0x91, 0x61, 0x96, 0x79, 0xc0, 0xde, 0x2f, 0xf3, 0x80, 0x3d, 0xcd, 0x20, 0x6c, 0xba, 0xb7,
-	0xa2, 0xe4, 0x12, 0x26, 0xcf, 0xbc, 0xee, 0xd0, 0x69, 0x1c, 0x00, 0xfd, 0x02, 0x73, 0x7f, 0x58,
-	0x96, 0x6f, 0x02, 0xff, 0xdb, 0x0d, 0xf2, 0x52, 0xef, 0xa5, 0x70, 0xf5, 0xaf, 0x5d, 0x66, 0x26,
-	0xbc, 0xad, 0x94, 0x7b, 0xc6, 0xda, 0x94, 0x42, 0xc8, 0x50, 0x35, 0x52, 0x28, 0xbb, 0xf0, 0x16,
-	0x55, 0x57, 0x6b, 0x97, 0xe1, 0x50, 0xd6, 0x43, 0x78, 0xef, 0x3a, 0x91, 0x4f, 0x30, 0xcf, 0xc5,
-	0x5e, 0x9f, 0xf0, 0x55, 0x3a, 0x5c, 0x70, 0xea, 0x2f, 0x38, 0x5d, 0x9b, 0x0b, 0x5e, 0x5e, 0xfc,
-	0x75, 0x90, 0x74, 0x44, 0x32, 0x98, 0xe6, 0xe2, 0x59, 0x1e, 0x90, 0x5c, 0xfa, 0xe0, 0x6b, 0x01,
-	0xcb, 0x85, 0xf7, 0x7a, 0x42, 0x74, 0xf4, 0x34, 0xfc, 0x27, 0x1f, 0xff, 0x04, 0x00, 0x00, 0xff,
-	0xff, 0x60, 0xff, 0x3d, 0x9b, 0x44, 0x03, 0x00, 0x00,
+	// 551 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x94, 0xdd, 0x6e, 0xd3, 0x30,
+	0x14, 0xc7, 0x97, 0x7e, 0x26, 0x67, 0xd5, 0xa8, 0xcc, 0x34, 0x42, 0xc7, 0x45, 0x64, 0x09, 0xa9,
+	0xd2, 0xa4, 0x0c, 0x15, 0x81, 0x84, 0xb8, 0x40, 0x65, 0x0b, 0x53, 0x35, 0x0a, 0x23, 0x49, 0x27,
+	0x6e, 0xb3, 0xf4, 0x34, 0x2a, 0xa4, 0x71, 0x14, 0x3b, 0x48, 0x79, 0x03, 0x1e, 0x80, 0x37, 0xe0,
+	0x45, 0x91, 0x1d, 0xa7, 0xdd, 0x05, 0xe5, 0xe3, 0xaa, 0xfe, 0xd9, 0xff, 0x73, 0x7c, 0xfe, 0x27,
+	0xc7, 0x05, 0x12, 0xb3, 0x4c, 0x14, 0x51, 0x2c, 0x62, 0xb6, 0x44, 0x37, 0x2f, 0x98, 0x60, 0xa4,
+	0xa7, 0x7e, 0xe2, 0xd1, 0x69, 0xc2, 0x58, 0x92, 0xe2, 0xb9, 0xc2, 0xbb, 0x72, 0x75, 0x8e, 0x9b,
+	0x5c, 0x54, 0xb5, 0x88, 0x7e, 0x81, 0xfe, 0x3a, 0x5b, 0xb1, 0x39, 0x4f, 0xc8, 0x10, 0xda, 0x73,
+	0x9e, 0xd8, 0x86, 0x63, 0x8c, 0x2d, 0x5f, 0x2e, 0xc9, 0x19, 0x74, 0x44, 0x95, 0xa3, 0xdd, 0x72,
+	0x8c, 0xf1, 0xd1, 0xe4, 0x51, 0x1d, 0x12, 0xbb, 0x3a, 0xc0, 0x9d, 0xf3, 0x24, 0xac, 0x72, 0xf4,
+	0x95, 0x88, 0x3a, 0xd0, 0xd7, 0x1b, 0x04, 0xa0, 0x17, 0x2c, 0x2e, 0xbc, 0x20, 0x18, 0x1e, 0x10,
+	0x0b, 0xba, 0x9e, 0xef, 0x7f, 0xf4, 0x87, 0x06, 0xad, 0xe0, 0x81, 0x28, 0xa2, 0x8c, 0xaf, 0xb0,
+	0x98, 0x23, 0xe7, 0x51, 0x82, 0xe4, 0x04, 0x7a, 0x0b, 0x8e, 0xc5, 0x6c, 0xa9, 0xaf, 0xd5, 0x44,
+	0x9e, 0x80, 0xf5, 0xae, 0x60, 0x9b, 0x69, 0x1c, 0xcf, 0x96, 0xea, 0x7a, 0xcb, 0xdf, 0x6d, 0x10,
+	0x1b, 0xfa, 0x21, 0xab, 0xcf, 0xda, 0xea, 0xac, 0x41, 0x99, 0x6f, 0xba, 0x61, 0x65, 0x26, 0xec,
+	0x8e, 0x63, 0x8c, 0xbb, 0xbe, 0x26, 0xfa, 0xdd, 0x00, 0x8b, 0x8b, 0x48, 0xe0, 0x2c, 0x5b, 0x31,
+	0x72, 0xb6, 0x73, 0x7a, 0x34, 0x79, 0xdc, 0xd8, 0xda, 0x9e, 0x6f, 0x8d, 0xa9, 0x26, 0xd8, 0xd0,
+	0xbf, 0x89, 0xaa, 0x94, 0x45, 0x75, 0x21, 0x03, 0xbf, 0x41, 0x42, 0xa0, 0x13, 0xac, 0x93, 0x4c,
+	0xd7, 0xa0, 0xd6, 0xff, 0xd0, 0x85, 0xcf, 0x60, 0x96, 0xd2, 0xa4, 0x2c, 0x64, 0x9f, 0xfd, 0x11,
+	0x98, 0x72, 0xf5, 0x21, 0xda, 0xa0, 0x76, 0xbf, 0x65, 0x59, 0xcf, 0xdb, 0x28, 0x8d, 0xb2, 0x18,
+	0xd5, 0xc5, 0x5d, 0xbf, 0x41, 0xfa, 0x12, 0xcc, 0x04, 0x45, 0x20, 0x6d, 0xc8, 0x8f, 0x79, 0x8d,
+	0x55, 0xf3, 0x31, 0xaf, 0xb1, 0x92, 0x71, 0xb7, 0x58, 0xf0, 0x35, 0xcb, 0x74, 0xca, 0x06, 0xe9,
+	0x04, 0xcc, 0xbc, 0xdc, 0x1b, 0x77, 0x0c, 0xdd, 0xdb, 0x28, 0x2d, 0x51, 0xbb, 0xaf, 0x81, 0xbe,
+	0x82, 0xc3, 0x25, 0xa6, 0x28, 0xf0, 0xff, 0xaf, 0xbb, 0x84, 0x41, 0x33, 0xad, 0xaa, 0x09, 0x0e,
+	0x1c, 0x86, 0x72, 0x2c, 0xa2, 0x58, 0x48, 0x75, 0x9d, 0xe3, 0xfe, 0x96, 0x6c, 0xf4, 0xb4, 0x48,
+	0xb8, 0xdd, 0x72, 0xda, 0xb2, 0xd1, 0x72, 0x4d, 0x29, 0x98, 0x05, 0xf2, 0x9c, 0x65, 0x5c, 0x4d,
+	0x91, 0x8f, 0xbc, 0x4c, 0x85, 0xae, 0x51, 0x13, 0xfd, 0x69, 0xc0, 0x43, 0xb1, 0xcb, 0xe3, 0x37,
+	0xfa, 0xd7, 0xd0, 0xfd, 0x54, 0x62, 0x51, 0xe9, 0x09, 0x78, 0xda, 0x4c, 0xc0, 0x6f, 0xb4, 0xae,
+	0x12, 0xaa, 0x69, 0xa8, 0x63, 0xf6, 0xcf, 0x03, 0x7d, 0x01, 0xd6, 0x56, 0x4d, 0x06, 0x60, 0x5e,
+	0x79, 0x61, 0x10, 0x4e, 0x43, 0x6f, 0x78, 0x20, 0xe9, 0x66, 0xa1, 0xc9, 0x90, 0x74, 0xe9, 0xbd,
+	0xaf, 0xa9, 0x35, 0xf9, 0x61, 0x80, 0x79, 0xa1, 0x1b, 0x42, 0xae, 0x60, 0x30, 0xcb, 0xd6, 0x62,
+	0xcb, 0x27, 0x6e, 0xfd, 0x7a, 0xdd, 0xe6, 0xf5, 0xba, 0x9e, 0x7c, 0xbd, 0xa3, 0xd3, 0x3f, 0xd4,
+	0x4c, 0x0f, 0x9e, 0x19, 0xe4, 0x0d, 0xf4, 0x66, 0xd9, 0x37, 0xf6, 0x15, 0xc9, 0x71, 0x23, 0xbd,
+	0xdf, 0xf5, 0xbf, 0x26, 0xb8, 0xab, 0xff, 0x3e, 0x9e, 0xff, 0x0a, 0x00, 0x00, 0xff, 0xff, 0x72,
+	0x9b, 0x1f, 0xbf, 0x5b, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -525,8 +664,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type ContractClient interface {
-	InitContract(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*InfoMsg, error)
-	Invoke(ctx context.Context, in *ContractInfo, opts ...grpc.CallOption) (*Response, error)
+	InitContract(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (Contract_InitContractClient, error)
+	Invoke(ctx context.Context, in *ContractInfo, opts ...grpc.CallOption) (Contract_InvokeClient, error)
 }
 
 type contractClient struct {
@@ -537,83 +676,137 @@ func NewContractClient(cc *grpc.ClientConn) ContractClient {
 	return &contractClient{cc}
 }
 
-func (c *contractClient) InitContract(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*InfoMsg, error) {
-	out := new(InfoMsg)
-	err := c.cc.Invoke(ctx, "/protoc.Contract/InitContract", in, out, opts...)
+func (c *contractClient) InitContract(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (Contract_InitContractClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Contract_serviceDesc.Streams[0], "/protoc.Contract/InitContract", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &contractInitContractClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
 
-func (c *contractClient) Invoke(ctx context.Context, in *ContractInfo, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
-	err := c.cc.Invoke(ctx, "/protoc.Contract/Invoke", in, out, opts...)
+type Contract_InitContractClient interface {
+	Recv() (*TransactionResponse, error)
+	grpc.ClientStream
+}
+
+type contractInitContractClient struct {
+	grpc.ClientStream
+}
+
+func (x *contractInitContractClient) Recv() (*TransactionResponse, error) {
+	m := new(TransactionResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *contractClient) Invoke(ctx context.Context, in *ContractInfo, opts ...grpc.CallOption) (Contract_InvokeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Contract_serviceDesc.Streams[1], "/protoc.Contract/Invoke", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &contractInvokeClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Contract_InvokeClient interface {
+	Recv() (*TransactionResponse, error)
+	grpc.ClientStream
+}
+
+type contractInvokeClient struct {
+	grpc.ClientStream
+}
+
+func (x *contractInvokeClient) Recv() (*TransactionResponse, error) {
+	m := new(TransactionResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // ContractServer is the server API for Contract service.
 type ContractServer interface {
-	InitContract(context.Context, *empty.Empty) (*InfoMsg, error)
-	Invoke(context.Context, *ContractInfo) (*Response, error)
+	InitContract(*empty.Empty, Contract_InitContractServer) error
+	Invoke(*ContractInfo, Contract_InvokeServer) error
 }
 
 func RegisterContractServer(s *grpc.Server, srv ContractServer) {
 	s.RegisterService(&_Contract_serviceDesc, srv)
 }
 
-func _Contract_InitContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(empty.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
+func _Contract_InitContract_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(empty.Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(ContractServer).InitContract(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protoc.Contract/InitContract",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContractServer).InitContract(ctx, req.(*empty.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(ContractServer).InitContract(m, &contractInitContractServer{stream})
 }
 
-func _Contract_Invoke_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ContractInfo)
-	if err := dec(in); err != nil {
-		return nil, err
+type Contract_InitContractServer interface {
+	Send(*TransactionResponse) error
+	grpc.ServerStream
+}
+
+type contractInitContractServer struct {
+	grpc.ServerStream
+}
+
+func (x *contractInitContractServer) Send(m *TransactionResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Contract_Invoke_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ContractInfo)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(ContractServer).Invoke(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protoc.Contract/Invoke",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContractServer).Invoke(ctx, req.(*ContractInfo))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(ContractServer).Invoke(m, &contractInvokeServer{stream})
+}
+
+type Contract_InvokeServer interface {
+	Send(*TransactionResponse) error
+	grpc.ServerStream
+}
+
+type contractInvokeServer struct {
+	grpc.ServerStream
+}
+
+func (x *contractInvokeServer) Send(m *TransactionResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 var _Contract_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "protoc.Contract",
 	HandlerType: (*ContractServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "InitContract",
-			Handler:    _Contract_InitContract_Handler,
+			StreamName:    "InitContract",
+			Handler:       _Contract_InitContract_Handler,
+			ServerStreams: true,
 		},
 		{
-			MethodName: "Invoke",
-			Handler:    _Contract_Invoke_Handler,
+			StreamName:    "Invoke",
+			Handler:       _Contract_Invoke_Handler,
+			ServerStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "contractcode.proto",
 }

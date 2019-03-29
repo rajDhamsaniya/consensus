@@ -40,28 +40,45 @@ message userInfo {
 }
 
 message getState {
-    string key = 1;
+    string Key = 1;
+	string Version = 2;
 }
 
 message putState {
-    string key = 1;
-    bytes value = 2;
+    string Key = 1;
+    bytes Value = 2;
+}
+
+message deleteState {
+	string Key = 1;
+	string Version = 2;
 }
 
 message contractInfo {
-	string transaction = 1;
-	bytes args = 2;
+	string Transaction = 1;
+	repeated string Args = 2;
 }
 
-message Response {
-	bytes result = 2;
+message response {
+	putState Result = 2;
 
+}
+
+message transactionResponse {
+
+	enum QueryType {
+		GETSTATE = 0;
+		PUTSTATE = 1;
+		DELSTATE = 2;
+	}
+	QueryType Query = 1;
+	bytes Payload = 2; 
 }
 
 
 service Contract{
 
-    rpc InitContract(google.protobuf.Empty) returns (infoMsg) {}
+    rpc InitContract(google.protobuf.Empty) returns (stream transactionResponse) {}
 
-	rpc Invoke(contractInfo) returns (Response) {}
+	rpc Invoke(contractInfo) returns (stream transactionResponse) {}
 }
