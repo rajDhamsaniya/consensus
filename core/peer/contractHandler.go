@@ -23,14 +23,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"	
-	"net"
-
+	"io"
+	"log"
 	"net"
 	"os"
 	"time"
 
 	pb3 "../../protoc/contractcode"
+	//pb3 "../../protoc/contractcode"
 	pb2 "../../protoc/discovery"
 	pb "../../protoc/helloworld"
 
@@ -44,7 +44,7 @@ const (
 	defaultName     = "10.0.2.15"
 	peerPort        = ":50051"
 	contractPort    = ":50053"
-	registryPort    = ":50052"
+	registryPort    = ":50050"
 	sign            = "Sign"
 )
 
@@ -53,6 +53,7 @@ type server struct{}
 
 func initContract() {
 
+	timeStamp := time.Now()
 	conn, err := grpc.Dial((contractAddress + contractPort), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -66,13 +67,22 @@ func initContract() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	r, err := c.InitContract(ctx, &empty.Empty{}, grpc.FailFast(false))
-	fmt.Println(r)
+	stream, err := c.InitContract(ctx, &empty.Empty{}, grpc.FailFast(false))
+	for {
+		a, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			fmt.Println("Unexpected Error", err)
+			break
+		}
+		fmt.Println("Data From Stream :  ", a)
+	}
+	fmt.Println("Data From Stream :  ", timeStamp)
+	// fmt.Println(r)
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
-	}
-	if r.Type == pb3.InfoMsg_SUCESS {
-		fmt.Println("Contact successfully invoked")
 	}
 
 }
@@ -99,25 +109,25 @@ func registerService() {
 	log.Printf("Greeting: %s", r.Message)
 }
 
-func connectDatabase() {
-	s, err := couchdb.NewServer(DefaultBaseURL)
-	if err != nil {
-		fmt.Println("hey")
-		fmt.Println(err)
-	}
-	s.Login("admin", "admin")
-	// var d *couchdb.Database
-	d, err = s.Get("new")
+// func connectDatabase() {
+// 	s, err := couchdb.NewServer(DefaultBaseURL)
+// 	if err != nil {
+// 		fmt.Println("hey")
+// 		fmt.Println(err)
+// 	}
+// 	s.Login("admin", "admin")
+// 	// var d *couchdb.Database
+// 	d, err = s.Get("new")
 
-	if err != nil {
-		fmt.Println("heyiiiiiii")
-		fmt.Println(err)
-	}
-	err = d.Available()
-	if err != nil {
-		fmt.Println(err)
-	}
-}
+// 	if err != nil {
+// 		fmt.Println("heyiiiiiii")
+// 		fmt.Println(err)
+// 	}
+// 	err = d.Available()
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// }
 
 func (s *server) ExecuteTransaction(ctx context.Context, in *pb.Executetx) (*pb.ExecResponse, error) {
 
@@ -130,16 +140,32 @@ func (s *server) ExecuteTransaction(ctx context.Context, in *pb.Executetx) (*pb.
 	c := pb3.NewContractClient(conn)
 
 	// Contact the server and print out its response.
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	r, err := c.Invoke(ctx, &pb3.ContractInfo{Transaction: in.Tx, Args: in.Args}, grpc.FailFast(false))
-	fmt.Println(r)
+	stream, err := c.Invoke(ctx, &pb3.ContractInfo{Transaction: in.Tx, Args: in.Args}, grpc.FailFast(false))
+	//fmt.Println(r)
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	return &pb.ExecResponse{Sign: sign, Result: r.Result}, nil
+
+	for {
+		a, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			fmt.Println("Unexpected Error", err)
+			break
+		}
+		fmt.Println("Data From Stream :  ", a)
+	}
+	// fmt.Println(r)
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+
+	return &pb.ExecResponse{Sign: sign, Result: nil}, nil
 
 }
 
@@ -157,7 +183,7 @@ func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.He
 func main() {
 
 	registerService()
-	initContract()
+	// initContract()
 
 	lis, err := net.Listen("tcp", peerPort)
 	if err != nil {

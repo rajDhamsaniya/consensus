@@ -1,7 +1,15 @@
 syntax = "proto3";
-package protoc;
+package contractcode;
 
 import "google/protobuf/empty.proto";
+
+service Contract{
+
+    rpc InitContract(google.protobuf.Empty) returns (stream transactionResponse) {}
+
+    rpc Invoke(contractInfo) returns (stream transactionResponse) {}
+}
+
 
 message infoMsg{
     enum MsgType {
@@ -45,8 +53,8 @@ message getState {
 }
 
 message putState {
-    string Key = 1;
-    bytes Value = 2;
+    string Id = 1;
+    repeated valueInfo Val = 2;
 }
 
 message deleteState {
@@ -57,6 +65,11 @@ message deleteState {
 message contractInfo {
 	string Transaction = 1;
 	repeated string Args = 2;
+}
+
+message valueInfo {
+	string Key=1;
+	string Value=2;
 }
 
 message response {
@@ -76,9 +89,3 @@ message transactionResponse {
 }
 
 
-service Contract{
-
-    rpc InitContract(google.protobuf.Empty) returns (stream transactionResponse) {}
-
-	rpc Invoke(contractInfo) returns (stream transactionResponse) {}
-}

@@ -26,11 +26,9 @@ import (
 	"sync"
 	"time"
 
-	pb3 "../../protoc/contractcode"
 	pb2 "../../protoc/discovery"
 	pb "../../protoc/helloworld"
 
-	"github.com/gogo/protobuf/proto"
 	"google.golang.org/grpc"
 )
 
@@ -40,7 +38,7 @@ const (
 	contractAddress = "10.0.2.15"
 	peerPort        = ":50051"
 	contractPort    = ":50053"
-	registryPort    = ":50052"
+	registryPort    = ":50050"
 	defaultName     = "world"
 )
 
@@ -90,7 +88,7 @@ func fetchServerList() []*pb2.Registration {
 	return r.Registrations
 }
 
-func invokeTransaction(tx string, Args []byte) {
+func invokeTransaction(tx string, Args []string) {
 
 	conn, err := grpc.Dial((peerAddress + peerPort), grpc.WithInsecure())
 	if err != nil {
@@ -114,33 +112,32 @@ func invokeTransaction(tx string, Args []byte) {
 func demoTransfer() {
 	tx := "TransferAmount"
 
-	var a pb3.TransferMessage
-	a.Amount = 500
-	a.FromAccId = "790efe70-80f9-68c5-696d-c23a6552868c"
-	a.ToAccId = "7c3aaa44-0ab7-8abe-35db-871c376e968f"
-	a.UserId = "790efe70-80f9-68c5-696d-c23a6552868c"
+	arr := make([]string, 0)
+	arr = append(arr, "1fe9fad5-971f-e366-5a52-2b6cd7359249")
+	arr = append(arr, "1fe9fad5-971f-e366-5a52-2b6cd7359249")
+	arr = append(arr, "6e5c149b-110f-ffd0-fe16-72308dfacc75")
+	arr = append(arr, "500")
+	// a.FromAccId = "790efe70-80f9-68c5-696d-c23a6552868c"
+	// a.ToAccId = "7c3aaa44-0ab7-8abe-35db-871c376e968f"
+	// a.UserId = "790efe70-80f9-68c5-696d-c23a6552868c"
 
-	Args, err := proto.Marshal(&a)
-	if err != nil {
-		fmt.Println(err)
-	}
-	invokeTransaction(tx, Args)
+	invokeTransaction(tx, arr)
 }
 
 func demoAddUser(num int, arr []string) {
 
 	tx := "AddUser"
-	var a pb3.UserInfo
+	// var a pb3.UserInfo
 
-	for i := 1; i <= num; i++ {
-		a.UserName = arr[i-1]
-		a.Balance = 5000
-		Args, err := proto.Marshal(&a)
-		if err != nil {
-			fmt.Println(err)
-		}
-		invokeTransaction(tx, Args)
-	}
+	// for i := 1; i <= num; i++ {
+	// 	a.UserName = arr[i-1]
+	// 	a.Balance = 5000
+	// 	//Args, err := proto.Marshal(&a)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	invokeTransaction(tx, arr)
+	// }
 }
 
 func main() {
@@ -148,7 +145,7 @@ func main() {
 	// peerList = fetchServerList()
 	// fmt.Println(peerList)
 	// num := 4
-	// array := []string{"qwe", "asd", "zxc", "iop"}
+	// array := []string{"iop", "5000"}
 	//demoAddUser(num, array)
 
 	demoTransfer()

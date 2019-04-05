@@ -24,17 +24,20 @@ RUN go get github.com/leesper/couchdb-golang
 
 
 
-WORKDIR /contractcode
+WORKDIR /example_cc
 
-COPY ./ /contractcode
+COPY ./ /example_cc
 
 RUN pwd
 
 RUN ls -la
 
-RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins=grpc:contractcode
+# RUN protoc -I protoc/helloworld protoc/helloworld/helloworld.proto --go_out=plugins=grpc:helloworld
 
-RUN go build -o contract contractcode/contractcode.go
+RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins=grpc:protoc/contractcode
+# RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins=grpc:contractcode
+
+RUN go build -o example example_cc/example_new.go
 
 
 
@@ -44,7 +47,7 @@ FROM debian:latest AS host
 
 WORKDIR /root/
 
-COPY --from=build-env /contractcode/contract .
-RUN chmod +x contract
+COPY --from=build-env /example_cc/example .
+RUN chmod +x example
 EXPOSE 50053
-ENTRYPOINT [ "./contract" ]
+ENTRYPOINT [ "./example" ]

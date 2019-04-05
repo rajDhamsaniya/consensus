@@ -14,7 +14,7 @@ import (
 var peers = make([](*pb.Registration), 0)
 
 const (
-	port string = ":50052"
+	port string = ":50050"
 )
 
 type server struct{}

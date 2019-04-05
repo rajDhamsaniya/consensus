@@ -4,7 +4,7 @@ import (
 	"log"
 	"net"
 
-	pb "study/GitHub/consensus/protoc/contractcode"
+	pb "../../protoc/contractcode"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
@@ -15,11 +15,13 @@ const (
 )
 
 var rq RequiredCode
-var detail *contractDetail
+var detail *ContractDetail
+
+type server struct{}
 
 func (s *server) InitContract(in *empty.Empty, stream pb.Contract_InitContractServer) error {
 
-	tDetail := new(transactionDetail)
+	tDetail := new(TransactionDetail)
 	tDetail.initStream = stream
 	tDetail.invokeStream = nil
 	detail.InitHandler(tDetail)
@@ -29,7 +31,7 @@ func (s *server) InitContract(in *empty.Empty, stream pb.Contract_InitContractSe
 
 func (s *server) Invoke(in *pb.ContractInfo, stream pb.Contract_InvokeServer) error {
 
-	tDetail := new(transactionDetail)
+	tDetail := new(TransactionDetail)
 	tDetail.invokeStream = stream
 	tDetail.initStream = nil
 	detail.InvokeHandler(in.Transaction, in.Args, tDetail)
@@ -37,7 +39,7 @@ func (s *server) Invoke(in *pb.ContractInfo, stream pb.Contract_InvokeServer) er
 }
 
 // RegisterListener registers a server created for contract execution
-func RegisterListener(rc RequiredCode, dtl *contractDetail) {
+func RegisterListener(rc RequiredCode, dtl *ContractDetail) {
 
 	rq = rc
 	detail = dtl

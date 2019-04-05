@@ -3,7 +3,7 @@ package contract
 import (
 	"fmt"
 
-	pb "study/GitHub/consensus/protoc/contractcode"
+	pb "../../protoc/contractcode"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -17,39 +17,39 @@ const (
 	DefaultBaseURL = "http://10.0.2.15:5984/"
 )
 
-type contractDetail struct {
+// ContractDetail for details regarding contract
+type ContractDetail struct {
 	contractID string
 	db         *couchdb.Database
 	channel    chan []map[string]interface{}
 }
 
-type transactionDetail struct {
+// TransactionDetail for details regarding transaction
+type TransactionDetail struct {
 	initStream   pb.Contract_InitContractServer
 	invokeStream pb.Contract_InvokeServer
 }
 
-type server struct{}
-
 // RequiredCode interface for stating the code to behave
 type RequiredCode interface {
-	Init(detail *contractDetail, txDetail *transactionDetail) (code int)
-	Invoke(detail *contractDetail, tx string, args []string, txDetail *transactionDetail) (code int)
+	Init(detail *ContractDetail, txDetail *TransactionDetail) (code int)
+	Invoke(detail *ContractDetail, tx string, args []string, txDetail *TransactionDetail) (code int)
 }
 
 // SupportCodeInterface interface for stating the code to behave
 type SupportCodeInterface interface {
 	ConnectDB()
-	GetState(id string) (docsQuery []map[string]interface{}, err error)
+	GetState(id string, txDetail *TransactionDetail) (docsQuery []map[string]interface{}, err error)
 	GetCollectionState(query string) (docsQuery []map[string]interface{}, err error)
-	PutState(newState []map[string]interface{})
+	PutState(newState []map[string]interface{}, txDetail *TransactionDetail)
 	GenerateUUID(uuid string)
 }
 
-func (detail *contractDetail) InitHandler(tDetail *transactionDetail) {
+func (detail *ContractDetail) InitHandler(tDetail *TransactionDetail) {
 	rq.Init(detail, tDetail)
 }
 
-func (detail *contractDetail) InvokeHandler(tx string, args []string, txDetail *transactionDetail) {
+func (detail *ContractDetail) InvokeHandler(tx string, args []string, txDetail *TransactionDetail) {
 
 	//detail.channel = make(chan []map[string]interface{}, 1)
 	rq.Invoke(detail, tx, args, txDetail)
@@ -57,7 +57,7 @@ func (detail *contractDetail) InvokeHandler(tx string, args []string, txDetail *
 }
 
 // ConnectDB used for connection to database
-func (detail *contractDetail) ConnectDB() {
+func (detail *ContractDetail) ConnectDB() {
 
 	s, err := couchdb.NewServer(DefaultBaseURL)
 	if err != nil {
@@ -80,7 +80,7 @@ func (detail *contractDetail) ConnectDB() {
 	fmt.Println("ConnectDB called")
 }
 
-func (detail *contractDetail) GetState(id string, txDetail transactionDetail) (docsQuery []map[string]interface{}, err error) {
+func (detail *ContractDetail) GetState(id string, txDetail *TransactionDetail) (docsQuery []map[string]interface{}, err error) {
 
 	docsQuery, err = detail.db.Query(nil, `_id=="`+id+`"`, nil, nil, nil, nil)
 	if err != nil {
@@ -105,7 +105,7 @@ func (detail *contractDetail) GetState(id string, txDetail transactionDetail) (d
 	return docsQuery, err
 }
 
-func (detail *contractDetail) GetCollectionState(query string) (docsQuery []map[string]interface{}, err error) {
+func (detail *ContractDetail) GetCollectionState(query string) (docsQuery []map[string]interface{}, err error) {
 
 	docsQuery, err = detail.db.Query(nil, query, nil, nil, nil, nil)
 	if err != nil {
@@ -117,24 +117,47 @@ func (detail *contractDetail) GetCollectionState(query string) (docsQuery []map[
 
 // PutState used for Get data from database
 // It takes  newState as parameter to run on database
-func (detail *contractDetail) PutState(newState []map[string]interface{}, txDetail transactionDetail) {
+func (detail *ContractDetail) PutState(newState []map[string]interface{}, txDetail *TransactionDetail) {
 
 	if txDetail.initStream != nil {
 		// out := &pb.GetState{Key: id, Version: fmt.Sprintln(docsQuery[0]["_rev"])}
-		payload, err := proto.Marshal(out)
-		if err != nil {
-			fmt.Println(err)
+		for _, state := range newState {
+			id := fmt.Sprintln(state["_id"])
+			arr := make([]*pb.ValueInfo, 0)
+			for k := range state {
+				val := fmt.Sprintln(state[k])
+				arr = append(arr, &pb.ValueInfo{Key: k, Value: val})
+				//out := &pb.PutState{Id: state["_id"], Value: state[k]}
+
+			}
+			out := &pb.PutState{Id: id, Val: arr}
+			payload, err := proto.Marshal(out)
+			if err != nil {
+				fmt.Println(err)
+			}
+			txDetail.initStream.Send(&pb.TransactionResponse{Query: pb.TransactionResponse_PUTSTATE, Payload: payload})
 		}
-		txDetail.initStream.Send(&pb.TransactionResponse{Query: pb.TransactionResponse_PUTSTATE, Payload: payload})
 	} else {
-		out := &pb.GetState{Key: id, Version: fmt.Sprint(docsQuery[0]["_rev"])}
-		payload, err := proto.Marshal(out)
-		if err != nil {
-			fmt.Println(err)
+		for _, state := range newState {
+			id := fmt.Sprintln(state["_id"])
+			arr := make([]*pb.ValueInfo, 0)
+			for k := range state {
+				val := fmt.Sprintln(state[k])
+				arr = append(arr, &pb.ValueInfo{Key: k, Value: val})
+				//out := &pb.PutState{Id: state["_id"], Value: state[k]}
+
+			}
+			out := &pb.PutState{Id: id, Val: arr}
+			payload, err := proto.Marshal(out)
+			if err != nil {
+				fmt.Println(err)
+			}
+			txDetail.invokeStream.Send(&pb.TransactionResponse{Query: pb.TransactionResponse_PUTSTATE, Payload: payload})
 		}
-		txDetail.invokeStream.Send(&pb.TransactionResponse{Query: pb.TransactionResponse_PUTSTATE, Payload: payload})
+		//txDetail.invokeStream.Send(&pb.TransactionResponse{Query: pb.TransactionResponse_PUTSTATE, Payload: payload})
 	}
 
+	// NI
 	if newState[0]["_id"] == nil {
 		err := detail.db.Available()
 		fmt.Println(err)
@@ -162,7 +185,7 @@ func (detail *contractDetail) PutState(newState []map[string]interface{}, txDeta
 	}
 }
 
-func (detail *contractDetail) TxOut() (out []map[string]interface{}) {
+func (detail *ContractDetail) TxOut() (out []map[string]interface{}) {
 
 	return out
 }
@@ -170,8 +193,9 @@ func (detail *contractDetail) TxOut() (out []map[string]interface{}) {
 //Start for chaincode listener
 func Start(rq RequiredCode) {
 
-	detail := new(contractDetail)
+	detail := new(ContractDetail)
 	detail.ConnectDB()
+	fmt.Println("reaches here")
 	RegisterListener(rq, detail)
 	// lis, err := net.Listen("tcp", contractPort)
 	// if err != nil {

@@ -20,18 +20,19 @@ RUN go get github.com/golang/protobuf/protoc-gen-go
 
 
 
-WORKDIR /helloworld
+WORKDIR /core
 
-COPY ./ /helloworld
+COPY ./ /core
 
 RUN pwd
 
 RUN ls -la
 
-RUN protoc -I protoc/helloworld protoc/helloworld/helloworld.proto --go_out=plugins=grpc:helloworld
-RUN protoc -I protoc/discovery protoc/discovery/discovery.proto --go_out=plugins=grpc:discovery
+RUN protoc -I protoc/helloworld protoc/helloworld/helloworld.proto --go_out=plugins=grpc:protoc/helloworld
+RUN protoc -I protoc/discovery protoc/discovery/discovery.proto --go_out=plugins=grpc:protoc/discovery
+RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins:protoc/contractcode
 
-RUN go build -o server helloworld/greeter_server/main.go
+RUN go build -o contractHandler core/peer/contractHandler.go
 
 
 
@@ -41,7 +42,7 @@ FROM debian:latest AS host
 
 WORKDIR /root/
 
-COPY --from=build-env /helloworld/server .
-RUN chmod +x server
+COPY --from=build-env /core/contractHandler .
+RUN chmod +x contractHandler
 EXPOSE 50051
-ENTRYPOINT [ "./server" ]
+ENTRYPOINT [ "./contractHandler" ]

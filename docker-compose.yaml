@@ -7,12 +7,12 @@ services:
       args:
         buildno: 1
     ports: 
-        - "50052:50052"
+        - "50050:50050"
 
   server:
     build: 
       context: ./
-      dockerfile: ./helloworld/Dockerfile
+      dockerfile: ./core/Dockerfile
       args: 
         buildno: 2
     ports: 
@@ -22,7 +22,7 @@ services:
   contract:
     build:
       context: ./
-      dockerfile: ./contractcode/Dockerfile
+      dockerfile: ./example_cc/Dockerfile
       args:
         buildno: 3
     ports: 
