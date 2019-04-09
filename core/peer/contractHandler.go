@@ -30,10 +30,13 @@ import (
 	"time"
 
 	pb3 "../../protoc/contractcode"
+	pb4 "../../protoc/orderer"
+
 	//pb3 "../../protoc/contractcode"
 	pb2 "../../protoc/discovery"
 	pb "../../protoc/helloworld"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 )
@@ -41,10 +44,12 @@ import (
 const (
 	registryAddress = "10.0.2.15"
 	contractAddress = "10.0.2.15"
+	ordererAddress  = "10.0.2.15"
 	defaultName     = "10.0.2.15"
 	peerPort        = ":50051"
 	contractPort    = ":50053"
 	registryPort    = ":50050"
+	ordererPort     = ":50054"
 	sign            = "Sign"
 )
 
@@ -149,8 +154,10 @@ func (s *server) ExecuteTransaction(ctx context.Context, in *pb.Executetx) (*pb.
 		log.Fatalf("could not greet: %v", err)
 	}
 
+	a := make([]*pb3.TransactionResponse, 0)
 	for {
-		a, err := stream.Recv()
+		tmp, err := stream.Recv()
+		a = append(a, tmp)
 		if err == io.EOF {
 			break
 		}
@@ -165,7 +172,10 @@ func (s *server) ExecuteTransaction(ctx context.Context, in *pb.Executetx) (*pb.
 		log.Fatalf("could not greet: %v", err)
 	}
 
-	return &pb.ExecResponse{Sign: sign, Result: nil}, nil
+	res := &pb3.Cargo{Load: a}
+	cargo, err := proto.Marshal(res)
+	submitTx(cargo)
+	return &pb.ExecResponse{Sign: sign, Result: nil}, err
 
 }
 
@@ -178,6 +188,27 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 
 func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	return &pb.HelloReply{Message: "Hello again " + in.Name}, nil
+}
+
+func submitTx(cargo []byte) {
+	conn, err := grpc.Dial((ordererAddress + ordererPort), grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb4.NewOrdererClient(conn)
+
+	// Contact the server and print out its response.
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	// t := time.Now().String
+	z, err := c.SubmitTx(ctx, &pb4.EndorsedTx{Payload: cargo}, grpc.FailFast(false))
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+		fmt.Println(z)
+	}
+
 }
 
 func main() {

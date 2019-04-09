@@ -72,6 +72,10 @@ message valueInfo {
 	string Value=2;
 }
 
+message Cargo{
+	repeated transactionResponse load = 1;
+}
+
 message response {
 	putState Result = 2;
 

@@ -113,9 +113,9 @@ func demoTransfer() {
 	tx := "TransferAmount"
 
 	arr := make([]string, 0)
-	arr = append(arr, "1fe9fad5-971f-e366-5a52-2b6cd7359249")
-	arr = append(arr, "1fe9fad5-971f-e366-5a52-2b6cd7359249")
-	arr = append(arr, "6e5c149b-110f-ffd0-fe16-72308dfacc75")
+	arr = append(arr, "48ce4759-3084-7871-c93b-7b65fafb0e72")
+	arr = append(arr, "48ce4759-3084-7871-c93b-7b65fafb0e72")
+	arr = append(arr, "7b859306-e886-4d12-b864-725fc8402e53")
 	arr = append(arr, "500")
 	// a.FromAccId = "790efe70-80f9-68c5-696d-c23a6552868c"
 	// a.ToAccId = "7c3aaa44-0ab7-8abe-35db-871c376e968f"
@@ -144,11 +144,11 @@ func main() {
 	// var peerList = make([](*pb2.Registration), 0)
 	// peerList = fetchServerList()
 	// fmt.Println(peerList)
-	// num := 4
-	// array := []string{"iop", "5000"}
-	//demoAddUser(num, array)
+	num := 4
+	array := []string{"asd", "5000000"}
+	demoAddUser(num, array)
 
-	demoTransfer()
+	// demoTransfer()
 
 	fmt.Println("done")
 

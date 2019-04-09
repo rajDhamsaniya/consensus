@@ -18,6 +18,8 @@ RUN go get google.golang.org/grpc
 
 RUN go get github.com/golang/protobuf/protoc-gen-go
 
+RUN go get github.com/gogo/protobuf/proto
+
 
 
 WORKDIR /core
@@ -31,6 +33,7 @@ RUN ls -la
 RUN protoc -I protoc/helloworld protoc/helloworld/helloworld.proto --go_out=plugins=grpc:protoc/helloworld
 RUN protoc -I protoc/discovery protoc/discovery/discovery.proto --go_out=plugins=grpc:protoc/discovery
 RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins:protoc/contractcode
+RUN protoc -I protoc/orderer protoc/orderer/orderer.proto --go_out=plugins:protoc/orderer
 
 RUN go build -o contractHandler core/peer/contractHandler.go
 
