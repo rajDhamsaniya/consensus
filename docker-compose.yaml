@@ -28,6 +28,24 @@ services:
     ports: 
       - "50053:50053"
 
+  gossip:
+    build:
+      context: ./
+      dockerfile: ./gossip/Dockerfile
+      args:
+        buildno: 4
+    ports:
+      - "50052:50052"
+
+  # orderer:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./orderer/Dockerfile
+  #     args:
+  #       buildno: 4
+  #   ports: 
+  #     - "50054:50054"
+
   # db:
   #   image: couchdb:2.3.0
   #   ports: 5984

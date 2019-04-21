@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"study/GitHub/consensus/orderer/kafka"
+
 	pb "study/GitHub/consensus/protoc/orderer"
+
+	"./kafka"
 
 	"github.com/gogo/protobuf/proto"
 
-	"github.com/Shopify/sarama"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 )
@@ -30,7 +31,8 @@ func (s *server) SubmitTx(ctx context.Context, in *pb.EndorsedTx) (*empty.Empty,
 		fmt.Println("can not convert")
 	}
 	//fmt.Println("Aye")
-	var producer sarama.AsyncProducer
+	//var producer sarama.AsyncProducer
+	producer := kafka.GetProducer()
 	kafka.SendTx(producer, msg)
 	// fmt.Println(producer)
 	return &empty.Empty{}, nil
@@ -45,10 +47,11 @@ func (s *server) GetSpecificBlock(ctx context.Context, in *pb.BlockId) (*pb.Bloc
 }
 
 func main() {
-	fmt.Println("Initialization")
-	producer := kafka.StartProducer()
-	go kafka.StartConsumer(producer)
 
+	producer := kafka.StartProducer()
+	fmt.Println("Initialization")
+	go kafka.StartConsumer(producer)
+	go kafka.ConnectGossipService()
 	lis, err := net.Listen("tcp", ordererPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

@@ -6,12 +6,14 @@ import (
 	"log"
 	"net"
 
-	pb "../protoc/discovery"
+	pb "protoc/discovery"
+
+	"github.com/golang/protobuf/ptypes/empty"
 
 	"google.golang.org/grpc"
 )
 
-var peers = make([](*pb.Registration), 0)
+var peerList = make(map[string](*pb.Registration), 0)
 
 const (
 	port string = ":50050"
@@ -22,36 +24,26 @@ type server struct{}
 //Register is used to implement registry.Register
 func (s *server) Register(ctx context.Context, newPeer *pb.Registration) (*pb.RegisterResponse, error) {
 
-	peers = append(peers, newPeer)
-	fmt.Println(peers)
+	peerList[newPeer.Ipv4] = newPeer
+
 	return &pb.RegisterResponse{Message: "registration successfull"}, nil
 }
 
 //Unregister is used to implement registry.Unregister
 func (s *server) Unregister(ctx context.Context, peerInfo *pb.Registration) (*pb.RegisterResponse, error) {
 
-	for i, pr := range peers {
-		if pr == peerInfo {
-			peers[i] = peers[len(peers)-1]
-			peers = peers[:len(peers)-1]
-			break
-		}
-	}
+	delete(peerList, peerInfo.Ipv4)
 	return &pb.RegisterResponse{Message: "Unregistration successfull"}, nil
 }
 
 //FetchServiceLocation is useed to implement registry.FetchServiceLocation
-func (s *server) FetchServiceLocation(ctx context.Context, rfr *pb.RegistrationFetchRequest) (*pb.RegistrationList, error) {
-	// if rfr.FetchAll == true {
-	return &pb.RegistrationList{Registrations: peers}, nil
-	// }
-	// else{
-	// 	var req = make([](*pb.Registration), 0)
+func (s *server) FetchServiceLocation(ctx context.Context, in *empty.Empty) (*pb.RegistrationList, error) {
 
-	// 	for pr := range peers {
-	// 		if pr.name ==
-	// 	}
-	// }
+	var peers []*pb.Registration
+	for _, value := range peerList {
+		peers = append(peers, value)
+	}
+	return &pb.RegistrationList{Registrations: peers}, nil
 
 }
 

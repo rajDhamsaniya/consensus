@@ -3,7 +3,7 @@ package contract
 import (
 	"fmt"
 
-	pb "../../protoc/contractcode"
+	pb "protoc/contractcode"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -45,14 +45,18 @@ type SupportCodeInterface interface {
 	GenerateUUID(uuid string)
 }
 
-func (detail *ContractDetail) InitHandler(tDetail *TransactionDetail) {
-	rq.Init(detail, tDetail)
+//InitHandler for init tranaction from contract
+func (detail *ContractDetail) InitHandler(tDetail *TransactionDetail) int {
+	code := rq.Init(detail, tDetail)
+	return code
 }
 
-func (detail *ContractDetail) InvokeHandler(tx string, args []string, txDetail *TransactionDetail) {
+// InvokeHandler for invoking the transaction from contract
+func (detail *ContractDetail) InvokeHandler(tx string, args []string, txDetail *TransactionDetail) int {
 
 	//detail.channel = make(chan []map[string]interface{}, 1)
-	rq.Invoke(detail, tx, args, txDetail)
+	code := rq.Invoke(detail, tx, args, txDetail)
+	return code
 	//close(detail.channel)
 }
 
@@ -80,6 +84,7 @@ func (detail *ContractDetail) ConnectDB() {
 	fmt.Println("ConnectDB called")
 }
 
+// GetState for query the localstate
 func (detail *ContractDetail) GetState(id string, txDetail *TransactionDetail) (docsQuery []map[string]interface{}, err error) {
 
 	docsQuery, err = detail.db.Query(nil, `_id=="`+id+`"`, nil, nil, nil, nil)
@@ -105,6 +110,7 @@ func (detail *ContractDetail) GetState(id string, txDetail *TransactionDetail) (
 	return docsQuery, err
 }
 
+// GetCollectionState for query string to ledger
 func (detail *ContractDetail) GetCollectionState(query string) (docsQuery []map[string]interface{}, err error) {
 
 	docsQuery, err = detail.db.Query(nil, query, nil, nil, nil, nil)
@@ -122,10 +128,10 @@ func (detail *ContractDetail) PutState(newState []map[string]interface{}, txDeta
 	if txDetail.initStream != nil {
 		// out := &pb.GetState{Key: id, Version: fmt.Sprintln(docsQuery[0]["_rev"])}
 		for _, state := range newState {
-			id := fmt.Sprintln(state["_id"])
+			id := fmt.Sprint(state["_id"])
 			arr := make([]*pb.ValueInfo, 0)
 			for k := range state {
-				val := fmt.Sprintln(state[k])
+				val := fmt.Sprint(state[k])
 				arr = append(arr, &pb.ValueInfo{Key: k, Value: val})
 				//out := &pb.PutState{Id: state["_id"], Value: state[k]}
 
@@ -139,10 +145,10 @@ func (detail *ContractDetail) PutState(newState []map[string]interface{}, txDeta
 		}
 	} else {
 		for _, state := range newState {
-			id := fmt.Sprintln(state["_id"])
+			id := fmt.Sprint(state["_id"])
 			arr := make([]*pb.ValueInfo, 0)
 			for k := range state {
-				val := fmt.Sprintln(state[k])
+				val := fmt.Sprint(state[k])
 				arr = append(arr, &pb.ValueInfo{Key: k, Value: val})
 				//out := &pb.PutState{Id: state["_id"], Value: state[k]}
 
@@ -158,33 +164,10 @@ func (detail *ContractDetail) PutState(newState []map[string]interface{}, txDeta
 	}
 
 	// NI
-	if newState[0]["_id"] == nil {
-		err := detail.db.Available()
-		fmt.Println(err)
-		if err == nil {
-			detail.ConnectDB()
-		}
-		fmt.Println("here np")
-		uuid := couchdb.GenerateUUID()
-		for {
-			if detail.db.Contains(uuid) != nil {
-				break
-			} else {
-				uuid = couchdb.GenerateUUID()
-			}
-		}
 
-		newState[0]["_id"] = uuid
-		_, _, err = detail.db.Save(newState[0], nil)
-		if err != nil {
-			fmt.Print("could not save")
-			fmt.Println(err)
-		}
-	} else {
-		detail.db.Update(newState, nil)
-	}
 }
 
+// TxOut shows the op of tx
 func (detail *ContractDetail) TxOut() (out []map[string]interface{}) {
 
 	return out

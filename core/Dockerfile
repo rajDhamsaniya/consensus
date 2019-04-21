@@ -20,6 +20,8 @@ RUN go get github.com/golang/protobuf/protoc-gen-go
 
 RUN go get github.com/gogo/protobuf/proto
 
+RUN go get github.com/leesper/couchdb-golang
+
 
 
 WORKDIR /core
@@ -30,10 +32,16 @@ RUN pwd
 
 RUN ls -la
 
-RUN protoc -I protoc/helloworld protoc/helloworld/helloworld.proto --go_out=plugins=grpc:protoc/helloworld
-RUN protoc -I protoc/discovery protoc/discovery/discovery.proto --go_out=plugins=grpc:protoc/discovery
-RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins:protoc/contractcode
-RUN protoc -I protoc/orderer protoc/orderer/orderer.proto --go_out=plugins:protoc/orderer
+RUN protoc -I . protoc/helloworld/helloworld.proto --go_out=plugins=grpc:$GOPATH/src
+RUN protoc -I . protoc/discovery/discovery.proto --go_out=plugins=grpc:$GOPATH/src
+RUN protoc -I . protoc/contractcode/contractcode.proto --go_out=plugins=grpc:$GOPATH/src
+RUN protoc -I . protoc/orderer/orderer.proto --go_out=plugins=grpc:$GOPATH/src
+RUN protoc -I . protoc/gossip/gossip.proto --go_out=plugins=grpc:$GOPATH/src
+RUN protoc protoc/core/core.proto -I . --go_out=plugins=grpc:$GOPATH/src
+
+
+
+
 
 RUN go build -o contractHandler core/peer/contractHandler.go
 

@@ -20,15 +20,17 @@ RUN go get github.com/golang/protobuf/protoc-gen-go
 
 
 
-WORKDIR /discovery
+WORKDIR /gossip
 
-COPY ./ /discovery
+COPY ./ /gossip
 
 RUN pwd
 
+RUN protoc -I . protoc/gossip/gossip.proto --go_out=plugins=grpc:$GOPATH/src
 RUN protoc -I . protoc/discovery/discovery.proto --go_out=plugins=grpc:$GOPATH/src
+RUN protoc protoc/core/core.proto -I . --go_out=plugins=grpc:$GOPATH/src
 
-RUN go build -o registry discovery/discovery_server.go
+RUN go build -o gossip_server gossip/gossip.go
 
 
 
@@ -38,7 +40,7 @@ FROM debian:latest AS host
 
 WORKDIR /root/
 
-COPY --from=build-env /discovery/registry .
-RUN chmod +x registry
+COPY --from=build-env /gossip/gossip_server .
+RUN chmod +x gossip_server
 EXPOSE 50052
-ENTRYPOINT [ "./registry" ]
+ENTRYPOINT [ "./gossip_server" ]

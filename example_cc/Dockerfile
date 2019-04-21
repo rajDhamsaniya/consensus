@@ -28,13 +28,10 @@ WORKDIR /example_cc
 
 COPY ./ /example_cc
 
-RUN pwd
-
-RUN ls -la
 
 # RUN protoc -I protoc/helloworld protoc/helloworld/helloworld.proto --go_out=plugins=grpc:helloworld
 
-RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins=grpc:protoc/contractcode
+RUN protoc -I . protoc/contractcode/contractcode.proto --go_out=plugins=grpc:$GOPATH/src
 # RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins=grpc:contractcode
 
 RUN go build -o example example_cc/example_new.go

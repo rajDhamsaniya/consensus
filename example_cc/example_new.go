@@ -22,20 +22,20 @@ func (t *SimpleCode) Invoke(sup *cont.ContractDetail, tx string, args []string, 
 	// channel = ch
 	if tx == "AddUser" {
 		if len(args) == 2 {
-			addUser(sup, args, tDetail)
-			return 200
+			i := addUser(sup, args, tDetail)
+			return i
 		}
 
 	} else if tx == "TransferAmount" {
-		transferAmount(sup, args, tDetail)
-		return 200
+		i := transferAmount(sup, args, tDetail)
+		return i
 	}
 	// return &pb.Response{Result: nil}, nil
 	code = 200
 	return code
 }
 
-func addUser(sup *cont.ContractDetail, args []string, tDetail *cont.TransactionDetail) {
+func addUser(sup *cont.ContractDetail, args []string, tDetail *cont.TransactionDetail) int {
 
 	doc := make(map[string]interface{})
 
@@ -51,11 +51,11 @@ func addUser(sup *cont.ContractDetail, args []string, tDetail *cont.TransactionD
 	//sup.PutState()
 	docs = append(docs, doc)
 	sup.PutState(docs, tDetail)
-	return
+	return 200
 }
 
 // TransferAmount for transfer amount from one user to other
-func transferAmount(sup *cont.ContractDetail, args []string, tDetail *cont.TransactionDetail) {
+func transferAmount(sup *cont.ContractDetail, args []string, tDetail *cont.TransactionDetail) int {
 
 	// args[0] = UserId
 	// args[1] = FromAccID
@@ -66,6 +66,7 @@ func transferAmount(sup *cont.ContractDetail, args []string, tDetail *cont.Trans
 
 		if err != nil {
 			fmt.Println(err)
+			return 500
 			// return &pb.StateInfo{Msg: pb.StateInfo_ERROR}, nil
 		}
 
@@ -90,10 +91,16 @@ func transferAmount(sup *cont.ContractDetail, args []string, tDetail *cont.Trans
 				sup.PutState(docsQuery, tDetail)
 				sup.PutState(docsQuery2, tDetail)
 
+			} else {
+				return 500
 			}
+		} else {
+			return 500
 		}
-
+	} else {
+		return 500
 	}
+	return 200
 }
 
 func main() {

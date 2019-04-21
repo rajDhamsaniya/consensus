@@ -1,10 +1,11 @@
 package contract
 
 import (
+	"errors"
 	"log"
 	"net"
 
-	pb "../../protoc/contractcode"
+	pb "protoc/contractcode"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
@@ -24,9 +25,12 @@ func (s *server) InitContract(in *empty.Empty, stream pb.Contract_InitContractSe
 	tDetail := new(TransactionDetail)
 	tDetail.initStream = stream
 	tDetail.invokeStream = nil
-	detail.InitHandler(tDetail)
+	code := detail.InitHandler(tDetail)
+	if code == 200 {
+		return nil
+	}
+	return errors.New("Can't Init Contract")
 
-	return nil
 }
 
 func (s *server) Invoke(in *pb.ContractInfo, stream pb.Contract_InvokeServer) error {
@@ -34,8 +38,11 @@ func (s *server) Invoke(in *pb.ContractInfo, stream pb.Contract_InvokeServer) er
 	tDetail := new(TransactionDetail)
 	tDetail.invokeStream = stream
 	tDetail.initStream = nil
-	detail.InvokeHandler(in.Transaction, in.Args, tDetail)
-	return nil
+	code := detail.InvokeHandler(in.Transaction, in.Args, tDetail)
+	if code == 200 {
+		return nil
+	}
+	return errors.New("Can't Invoke Contract")
 }
 
 // RegisterListener registers a server created for contract execution
