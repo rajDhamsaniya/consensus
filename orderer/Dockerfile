@@ -34,7 +34,9 @@ COPY ./ /orderer
 # RUN protoc -I protoc/helloworld protoc/helloworld/helloworld.proto --go_out=plugins=grpc:protoc/helloworld
 # RUN protoc -I protoc/discovery protoc/discovery/discovery.proto --go_out=plugins=grpc:protoc/discovery
 # RUN protoc -I protoc/contractcode protoc/contractcode/contractcode.proto --go_out=plugins:protoc/contractcode
+RUN protoc -I . protoc/gossip/gossip.proto --go_out=plugins=grpc:$GOPATH/src
 RUN protoc -I . protoc/orderer/orderer.proto --go_out=plugins=grpc:$GOPATH/src
+
 
 RUN go build -o serviceNode orderer/serviceNode.go
 

@@ -42,7 +42,7 @@ func (s *server) Deliver(ctx context.Context, in *pb.Block) (*empty.Empty, error
 	defer cancel()
 	// t := time.Now().String
 	z, err := discoveryClient.FetchServiceLocation(registerCtx, &empty.Empty{}, grpc.FailFast(false))
-	connectPeer(z.Registrations[0])
+	// connectPeer(z.Registrations[0])
 	for i := 0; i < len(z.Registrations); i++ {
 		if _, ok := peerList[(z.Registrations[i].Ipv4)]; ok {
 			peerCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

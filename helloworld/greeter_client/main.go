@@ -33,13 +33,15 @@ import (
 )
 
 const (
-	peerAddress     = "10.0.2.15"
-	registryAddress = "10.0.2.15"
-	contractAddress = "10.0.2.15"
-	peerPort        = ":50051"
-	contractPort    = ":50053"
-	registryPort    = ":50050"
-	defaultName     = "world"
+	peerAddress      = "10.0.2.15"
+	registryAddress  = "10.0.2.15"
+	contractAddress  = "10.0.2.15"
+	discoveryAddress = "10.0.2.15"
+	discoveryPort    = ":50050"
+	peerPort         = ":50051"
+	contractPort     = ":50053"
+	registryPort     = ":50050"
+	defaultName      = "world"
 )
 
 func fetchServerList() []*pb2.Registration {
@@ -77,7 +79,7 @@ func invokeTransaction(tx string, Args []string) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	r, err := c.ExecuteTransaction(ctx, &pb.Executetx{Tx: tx, Args: Args}, grpc.FailFast(false))
+	r, err := c.ExecuteTransaction(ctx, &pb.Executetx{Tx: tx, Args: Args, InvokerId: "userID", IType: pb.Executetx_CLIENT}, grpc.FailFast(false))
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
@@ -89,9 +91,9 @@ func demoTransfer() {
 	tx := "TransferAmount"
 
 	arr := make([]string, 0)
-	arr = append(arr, "7c77f3dc-0389-69be-ed0f-15330e27015e")
-	arr = append(arr, "7c77f3dc-0389-69be-ed0f-15330e27015e")
-	arr = append(arr, "0c3841bb-1309-2a65-ba8d-859ce552a99b")
+	arr = append(arr, "834d1564-6600-4b70-ee76-a8bf3b644117")
+	arr = append(arr, "834d1564-6600-4b70-ee76-a8bf3b644117")
+	arr = append(arr, "c5ca24ae-4e3a-2c94-2437-87324831e171")
 	arr = append(arr, "500")
 	// a.FromAccId = "790efe70-80f9-68c5-696d-c23a6552868c"
 	// a.ToAccId = "7c3aaa44-0ab7-8abe-35db-871c376e968f"
@@ -119,12 +121,12 @@ func demoAddUser(num int, arr []string) {
 func main() {
 	// var peerList = make([](*pb2.Registration), 0)
 	// peerList = fetchServerList()
-	// fmt.Println(peerList)
-	// num := 4
-	// array := []string{"asd", "5000000"}
-	// demoAddUser(num, array)
+	// 	fmt.Println(peerList)
+	num := 4
+	array := []string{"xyz", "5000"}
+	demoAddUser(num, array)
 
-	demoTransfer()
+	// demoTransfer()
 
 	fmt.Println("done")
 

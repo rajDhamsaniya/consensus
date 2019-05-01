@@ -6,7 +6,8 @@ import (
 	"log"
 	"net"
 
-	pb "study/GitHub/consensus/protoc/orderer"
+	pb2 "protoc/gossip"
+	pb "protoc/orderer"
 
 	"./kafka"
 
@@ -34,16 +35,21 @@ func (s *server) SubmitTx(ctx context.Context, in *pb.EndorsedTx) (*empty.Empty,
 	//var producer sarama.AsyncProducer
 	producer := kafka.GetProducer()
 	kafka.SendTx(producer, msg)
-	// fmt.Println(producer)
+	fmt.Println("producer sent")
 	return &empty.Empty{}, nil
 }
 func (s *server) GetBlocks(in *pb.BlockId, stream pb.Orderer_GetBlocksServer) error {
 
+	arr := kafka.GetBlocks(in.OffSet)
+	for i := 0; i < len(arr); i++ {
+		stream.Send(&arr[i])
+	}
 	return nil
-}
-func (s *server) GetSpecificBlock(ctx context.Context, in *pb.BlockId) (*pb.Block, error) {
 
-	return &pb.Block{}, nil
+}
+func (s *server) GetSpecificBlock(ctx context.Context, in *pb.BlockId) (*pb2.Block, error) {
+	block := kafka.GetSpecificBlock(in.OffSet)
+	return &block, nil
 }
 
 func main() {

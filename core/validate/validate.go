@@ -7,6 +7,8 @@ import (
 	pb2 "protoc/contractcode"
 	pb "protoc/gossip"
 
+	"crypto/md5"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/leesper/couchdb-golang"
 )
@@ -62,7 +64,9 @@ func (block *BlockInfo) ValidateBlock() {
 				} else if txResponse.Load[j].Query == pb2.TransactionResponse_DELSTATE {
 					var state pb2.DeleteState
 					err = proto.Unmarshal(txResponse.Load[j].Payload, &state)
-					delState(&state)
+					if !delState(&state) {
+						block.mask[i] = false
+					}
 				}
 			}
 		}
@@ -95,12 +99,22 @@ func putState(in *pb2.PutState) {
 			connectDB()
 		}
 		fmt.Println("here np")
-		uuid := couchdb.GenerateUUID()
+		data, _ := proto.Marshal(in)
+		tmp := md5.Sum(data)
+		tmp[8] = tmp[8]&^0xc0 | 0x80
+		tmp[6] = tmp[6]&^0xf0 | 0x40
+		var uuid string
+		uuid = fmt.Sprintf("%x-%x-%x-%x-%x", tmp[0:4], tmp[4:6], tmp[6:8], tmp[8:10], tmp[10:])
+		//uuid := couchdb.GenerateUUID()
 		for {
 			if db.Contains(uuid) != nil {
 				break
 			} else {
-				uuid = couchdb.GenerateUUID()
+				data, _ := proto.Marshal(in)
+				tmp := md5.Sum(data)
+				tmp[8] = tmp[7]&^0xc0 | 0x80
+				tmp[6] = tmp[6]&^0xf0 | 0x40
+				uuid = fmt.Sprintf("%x-%x-%x-%x-%x", tmp[0:4], tmp[4:6], tmp[6:8], tmp[8:10], tmp[10:])
 			}
 		}
 
@@ -123,8 +137,19 @@ func putState(in *pb2.PutState) {
 
 }
 
-func delState(in *pb2.DeleteState) {
-
+func delState(in *pb2.DeleteState) bool {
+	docsQuery, err := db.Query(nil, `_id=="`+in.Key+`"`, nil, nil, nil, nil)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	if docsQuery[0]["_rev"] == in.Version {
+		err := db.Delete(fmt.Sprint(docsQuery[0]["_id"]))
+		if err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 func connectDB() {

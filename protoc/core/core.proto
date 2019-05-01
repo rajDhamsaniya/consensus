@@ -33,6 +33,12 @@ service PeerManager {
 message Executetx {
 	string tx = 1;
 	repeated string Args = 2;
+	string invokerId = 3;
+	enum InvokerType {
+		CLIENT = 0;
+		PEER = 1;
+	}
+	InvokerType iType = 4;
 }
 
 message ExecResponse {

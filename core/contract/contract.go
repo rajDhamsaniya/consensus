@@ -40,8 +40,9 @@ type RequiredCode interface {
 type SupportCodeInterface interface {
 	ConnectDB()
 	GetState(id string, txDetail *TransactionDetail) (docsQuery []map[string]interface{}, err error)
-	GetCollectionState(query string) (docsQuery []map[string]interface{}, err error)
+	// GetCollectionState(query string) (docsQuery []map[string]interface{}, err error)
 	PutState(newState []map[string]interface{}, txDetail *TransactionDetail)
+	DelState(id string, txDetail *TransactionDetail)
 	GenerateUUID(uuid string)
 }
 
@@ -71,6 +72,13 @@ func (detail *ContractDetail) ConnectDB() {
 	s.Login("admin", "admin")
 	// var db *couchdb.Database
 	detail.db, err = s.Get("new")
+
+	if detail.db == nil {
+		detail.db, err = s.Create("new")
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 
 	if err != nil {
 		fmt.Println("heyiiiiiii")
@@ -110,16 +118,16 @@ func (detail *ContractDetail) GetState(id string, txDetail *TransactionDetail) (
 	return docsQuery, err
 }
 
-// GetCollectionState for query string to ledger
-func (detail *ContractDetail) GetCollectionState(query string) (docsQuery []map[string]interface{}, err error) {
+// // GetCollectionState for query string to ledger
+// func (detail *ContractDetail) GetCollectionState(query string) (docsQuery []map[string]interface{}, err error) {
 
-	docsQuery, err = detail.db.Query(nil, query, nil, nil, nil, nil)
-	if err != nil {
-		fmt.Println(err)
-		return nil, nil
-	}
-	return docsQuery, err
-}
+// 	docsQuery, err = detail.db.Query(nil, query, nil, nil, nil, nil)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return nil, nil
+// 	}
+// 	return docsQuery, err
+// }
 
 // PutState used for Get data from database
 // It takes  newState as parameter to run on database
@@ -167,10 +175,30 @@ func (detail *ContractDetail) PutState(newState []map[string]interface{}, txDeta
 
 }
 
-// TxOut shows the op of tx
-func (detail *ContractDetail) TxOut() (out []map[string]interface{}) {
+// DelState for query the localstate
+func (detail *ContractDetail) DelState(id string, txDetail *TransactionDetail) {
 
-	return out
+	docsQuery, err := detail.db.Query(nil, `_id=="`+id+`"`, nil, nil, nil, nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if txDetail.initStream != nil {
+		out := &pb.DeleteState{Key: id, Version: fmt.Sprint(docsQuery[0]["_rev"])}
+		payload, err := proto.Marshal(out)
+		if err != nil {
+			fmt.Println(err)
+		}
+		txDetail.initStream.Send(&pb.TransactionResponse{Query: pb.TransactionResponse_DELSTATE, Payload: payload})
+	} else {
+		out := &pb.DeleteState{Key: id, Version: fmt.Sprint(docsQuery[0]["_rev"])}
+		payload, err := proto.Marshal(out)
+		if err != nil {
+			fmt.Println(err)
+		}
+		txDetail.invokeStream.Send(&pb.TransactionResponse{Query: pb.TransactionResponse_DELSTATE, Payload: payload})
+	}
+
 }
 
 //Start for chaincode listener

@@ -6,9 +6,10 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 
-	pb2 "study/GitHub/consensus/protoc/gossip"
+	pb2 "protoc/gossip"
 
 	"github.com/Shopify/sarama"
 	"github.com/gogo/protobuf/proto"
@@ -23,13 +24,14 @@ const (
 var producer sarama.AsyncProducer
 var gossipClient pb2.GossipClient
 var gossipConn *grpc.ClientConn
+var ledger = make([]pb2.Block, 0)
 
 // StartConsumer for consume
 func StartConsumer(produce sarama.AsyncProducer) {
 
 	var err error
 
-	consumer, err := sarama.NewConsumer([]string{"localhost:9092"}, nil)
+	consumer, err := sarama.NewConsumer([]string{"10.0.2.15:9092"}, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -125,7 +127,7 @@ func StartProducer() sarama.AsyncProducer {
 	config := sarama.NewConfig()
 	config.Producer.Return.Successes = true
 	var err error
-	producer, err = sarama.NewAsyncProducer([]string{"localhost:9092"}, config)
+	producer, err = sarama.NewAsyncProducer([]string{"10.0.2.15:9092"}, config)
 	if err != nil {
 		panic(err)
 	}
@@ -185,9 +187,36 @@ func cutBlock(bunch []*pb2.EndorsedTx) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	// t := time.Now().String
-	z, err := gossipClient.Deliver(ctx, &pb2.Block{Sign: "sign", Bunch: bunch, OffSet: "asd"}, grpc.FailFast(false))
+	var newBlock pb2.Block
+	newBlock.Sign = "sign"
+	newBlock.Bunch = bunch
+	newBlock.OffSet = strconv.Itoa(len(ledger) + 1)
+	ledger = append(ledger, newBlock)
+	z, err := gossipClient.Deliver(ctx, &newBlock, grpc.FailFast(false))
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 		fmt.Println(z)
 	}
+}
+
+// GetBlocks for getting the bunch of blocks
+func GetBlocks(id string) []pb2.Block {
+
+	offset, err := strconv.Atoi(id)
+	if err == nil {
+		offset--
+		return ledger[offset:]
+	}
+	return nil
+}
+
+// GetSpecificBlock for getting specific block
+func GetSpecificBlock(id string) pb2.Block {
+
+	offset, err := strconv.Atoi(id)
+	if err == nil {
+		offset--
+		return ledger[offset]
+	}
+	return pb2.Block{OffSet: "0"}
 }
