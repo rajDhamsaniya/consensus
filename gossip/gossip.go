@@ -17,9 +17,9 @@ import (
 
 const (
 	peerPort         = ":50051"
-	gossipAddress    = "10.0.2.15"
+	gossipAddress    = "10.20.24.26"
 	gossipPort       = ":50052"
-	discoveryAddress = "10.0.2.15"
+	discoveryAddress = "10.20.24.26"
 	discoveryPort    = ":50050"
 )
 
@@ -46,9 +46,10 @@ func (s *server) Deliver(ctx context.Context, in *pb.Block) (*empty.Empty, error
 	for i := 0; i < len(z.Registrations); i++ {
 		if _, ok := peerList[(z.Registrations[i].Ipv4)]; ok {
 			peerCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-
+			fmt.Println("Reaches here")
 			tempClient := peerList[(z.Registrations[i].Ipv4)]
 			_, err = tempClient.peerClient.ValidateBlock(peerCtx, in, grpc.FailFast(false))
+			fmt.Println("Reaches here")
 			cancel()
 		} else {
 			connectPeer(z.Registrations[i])

@@ -15,7 +15,7 @@ import (
 
 const (
 	// DefaultBaseURL is the default address of CouchDB server.
-	DefaultBaseURL = "http://10.0.2.15:5984/"
+	DefaultBaseURL = "http://10.20.24.26:5984/"
 )
 
 //BlockInfo regarding the block
@@ -74,6 +74,9 @@ func (block *BlockInfo) ValidateBlock() {
 }
 
 func checkState(in *pb2.GetState) bool {
+	if db == nil {
+		connectDB()
+	}
 	docsQuery, err := db.Query(nil, `_id=="`+in.Key+`"`, nil, nil, nil, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -121,6 +124,9 @@ func putState(in *pb2.PutState) {
 		in.Id = uuid
 	} else {
 		docsQuery, err = db.Query(nil, `_id=="`+in.Id+`"`, nil, nil, nil, nil)
+		if err != nil {
+			return
+		}
 		doc = docsQuery[0]
 	}
 

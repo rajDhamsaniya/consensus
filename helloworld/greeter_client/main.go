@@ -33,10 +33,10 @@ import (
 )
 
 const (
-	peerAddress      = "10.0.2.15"
-	registryAddress  = "10.0.2.15"
-	contractAddress  = "10.0.2.15"
-	discoveryAddress = "10.0.2.15"
+	peerAddress      = "10.20.24.26"
+	registryAddress  = "10.20.24.26"
+	contractAddress  = "10.20.24.26"
+	discoveryAddress = "10.20.24.26"
 	discoveryPort    = ":50050"
 	peerPort         = ":50051"
 	contractPort     = ":50053"
@@ -91,9 +91,9 @@ func demoTransfer() {
 	tx := "TransferAmount"
 
 	arr := make([]string, 0)
-	arr = append(arr, "834d1564-6600-4b70-ee76-a8bf3b644117")
-	arr = append(arr, "834d1564-6600-4b70-ee76-a8bf3b644117")
-	arr = append(arr, "c5ca24ae-4e3a-2c94-2437-87324831e171")
+	arr = append(arr, "42915f0f-11eb-431d-9416-4ea2da3b85bb")
+	arr = append(arr, "42915f0f-11eb-431d-9416-4ea2da3b85bb")
+	arr = append(arr, "6a21d603-8fda-48b7-b7f1-bee772979a40")
 	arr = append(arr, "500")
 	// a.FromAccId = "790efe70-80f9-68c5-696d-c23a6552868c"
 	// a.ToAccId = "7c3aaa44-0ab7-8abe-35db-871c376e968f"
@@ -122,11 +122,11 @@ func main() {
 	// var peerList = make([](*pb2.Registration), 0)
 	// peerList = fetchServerList()
 	// 	fmt.Println(peerList)
-	num := 4
-	array := []string{"xyz", "5000"}
-	demoAddUser(num, array)
+	// num := 4
+	// array := []string{"asd", "5000000"}
+	// demoAddUser(num, array)
 
-	// demoTransfer()
+	demoTransfer()
 
 	fmt.Println("done")
 

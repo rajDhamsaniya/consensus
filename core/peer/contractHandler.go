@@ -49,11 +49,11 @@ import (
 )
 
 const (
-	registryAddress  = "10.0.2.15"
-	contractAddress  = "10.0.2.15"
-	ordererAddress   = "10.0.2.15"
-	defaultName      = "10.0.2.15"
-	discoveryAddress = "10.0.2.15"
+	registryAddress  = "10.20.24.26"
+	contractAddress  = "10.20.24.26"
+	ordererAddress   = "10.20.24.26"
+	defaultName      = "10.20.24.26"
+	discoveryAddress = "10.20.24.26"
 	discoveryPort    = ":50050"
 	peerPort         = ":50051"
 	contractPort     = ":50053"
@@ -206,10 +206,10 @@ func (s *server) ExecuteTransaction(ctx context.Context, in *pb.Executetx) (*pb.
 
 	if in.IType == pb.Executetx_CLIENT {
 		signs := make([]string, 3)
-		// for i := 0; i < 3; i++ {
-		// 	temp := <-c
-		// 	signs[i] = temp.Sign
-		// }
+		for i := 0; i < 1; i++ {
+			temp := <-c
+			signs[i] = temp.Sign
+		}
 
 		submitTx(signs, cargo)
 		fmt.Println("tx submitted")
@@ -291,23 +291,28 @@ func invokePeer(z *pb2.Registration, in *pb.Executetx, c chan *pb.ExecResponse) 
 
 		tempClient := peerList[(z.Ipv4)]
 		response, err := tempClient.peerClient.ExecuteTransaction(peerCtx, &pb.Executetx{Tx: in.Tx, Args: in.Args, InvokerId: in.InvokerId, IType: pb.Executetx_PEER}, grpc.FailFast(false))
+		fmt.Println("Response taken")
 		if err != nil {
+			fmt.Println(err)
 			cancel()
 			return
 		}
+		fmt.Println("Response sent")
 		c <- response
 		cancel()
 
 	} else {
 		connectPeer(z)
 		peerCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-
+		fmt.Println("Response taken")
 		tempClient := peerList[(z.Ipv4)]
 		response, err := tempClient.peerClient.ExecuteTransaction(peerCtx, &pb.Executetx{Tx: in.Tx, Args: in.Args, InvokerId: in.InvokerId, IType: pb.Executetx_PEER}, grpc.FailFast(false))
 		if err != nil {
+			fmt.Println(err)
 			cancel()
 			return
 		}
+		fmt.Println("Response sent")
 		c <- response
 		cancel()
 

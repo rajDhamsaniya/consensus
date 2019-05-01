@@ -27,8 +27,11 @@ func (t *SimpleCode) Invoke(sup *cont.ContractDetail, tx string, args []string, 
 		}
 
 	} else if tx == "TransferAmount" {
-		i := transferAmount(sup, args, tDetail)
-		return i
+		if len(args) == 4 {
+			i := transferAmount(sup, args, tDetail)
+			return i
+		}
+		return 500
 	}
 	// return &pb.Response{Result: nil}, nil
 	code = 200
@@ -64,7 +67,7 @@ func transferAmount(sup *cont.ContractDetail, args []string, tDetail *cont.Trans
 	if args[0] == args[1] {
 		docsQuery, err := sup.GetState(args[1], tDetail)
 
-		if err != nil {
+		if err != nil || len(docsQuery) == 0 {
 			fmt.Println(err)
 			return 500
 			// return &pb.StateInfo{Msg: pb.StateInfo_ERROR}, nil

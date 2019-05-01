@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	gossipAddress = "10.0.2.15"
+	gossipAddress = "10.20.24.26"
 	gossipPort    = ":50052"
 )
 
@@ -31,7 +31,7 @@ func StartConsumer(produce sarama.AsyncProducer) {
 
 	var err error
 
-	consumer, err := sarama.NewConsumer([]string{"10.0.2.15:9092"}, nil)
+	consumer, err := sarama.NewConsumer([]string{"10.20.24.26:9092"}, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -127,7 +127,7 @@ func StartProducer() sarama.AsyncProducer {
 	config := sarama.NewConfig()
 	config.Producer.Return.Successes = true
 	var err error
-	producer, err = sarama.NewAsyncProducer([]string{"10.0.2.15:9092"}, config)
+	producer, err = sarama.NewAsyncProducer([]string{"10.20.24.26:9092"}, config)
 	if err != nil {
 		panic(err)
 	}
@@ -192,7 +192,9 @@ func cutBlock(bunch []*pb2.EndorsedTx) {
 	newBlock.Bunch = bunch
 	newBlock.OffSet = strconv.Itoa(len(ledger) + 1)
 	ledger = append(ledger, newBlock)
+	fmt.Println("Delivering")
 	z, err := gossipClient.Deliver(ctx, &newBlock, grpc.FailFast(false))
+	fmt.Println("Delivered")
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 		fmt.Println(z)

@@ -14,7 +14,7 @@ import (
 
 const (
 	// DefaultBaseURL is the default address of CouchDB server.
-	DefaultBaseURL = "http://10.0.2.15:5984/"
+	DefaultBaseURL = "http://10.20.24.26:5984/"
 )
 
 // ContractDetail for details regarding contract
@@ -98,7 +98,10 @@ func (detail *ContractDetail) GetState(id string, txDetail *TransactionDetail) (
 	docsQuery, err = detail.db.Query(nil, `_id=="`+id+`"`, nil, nil, nil, nil)
 	if err != nil {
 		fmt.Println(err)
-		return nil, nil
+		return make([]map[string]interface{}, 0), err
+	}
+	if len(docsQuery) == 0 {
+		return make([]map[string]interface{}, 0), nil
 	}
 	if txDetail.initStream != nil {
 		out := &pb.GetState{Key: id, Version: fmt.Sprint(docsQuery[0]["_rev"])}
