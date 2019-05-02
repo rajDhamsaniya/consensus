@@ -20,18 +20,17 @@ RUN go get github.com/golang/protobuf/protoc-gen-go
 
 
 
-WORKDIR /helloworld
+WORKDIR /gossip
 
-COPY ./ /helloworld
+COPY ./ /gossip
 
 RUN pwd
 
-RUN ls -la
+RUN protoc -I . protoc/gossip/gossip.proto --go_out=plugins=grpc:$GOPATH/src
+RUN protoc -I . protoc/discovery/discovery.proto --go_out=plugins=grpc:$GOPATH/src
+RUN protoc protoc/core/core.proto -I . --go_out=plugins=grpc:$GOPATH/src
 
-RUN protoc -I protoc/helloworld protoc/helloworld/helloworld.proto --go_out=plugins=grpc:helloworld
-RUN protoc -I protoc/discovery protoc/discovery/discovery.proto --go_out=plugins=grpc:discovery
-
-RUN go build -o server helloworld/greeter_server/main.go
+RUN go build -o gossip_server gossip/gossip.go
 
 
 
@@ -41,7 +40,7 @@ FROM debian:latest AS host
 
 WORKDIR /root/
 
-COPY --from=build-env /helloworld/server .
-RUN chmod +x server
-EXPOSE 50051
-ENTRYPOINT [ "./server" ]
+COPY --from=build-env /gossip/gossip_server .
+RUN chmod +x gossip_server
+EXPOSE 50052
+ENTRYPOINT [ "./gossip_server" ]

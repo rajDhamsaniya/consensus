@@ -1,5 +1,19 @@
 version: '3.3'
 services: 
+  # db:
+  #   image: couchdb:2.3.0
+  #   ports: 
+  #     - "5984:5984"
+  #   environment:
+  #     - COUCHDB_USER='admin'
+  #     - COUCHDB_PASSWORD='admin'
+  #     - NODENAME='n1'
+    # deploy:
+    #   replicas: 1
+    #   restart_policy:
+    #     condition: on-failure
+
+
   discovery:
     build:
       context: ./
@@ -7,12 +21,12 @@ services:
       args:
         buildno: 1
     ports: 
-        - "50052:50052"
+        - "50050:50050"
 
   server:
     build: 
       context: ./
-      dockerfile: ./helloworld/Dockerfile
+      dockerfile: ./core/Dockerfile
       args: 
         buildno: 2
     ports: 
@@ -22,18 +36,27 @@ services:
   contract:
     build:
       context: ./
-      dockerfile: ./contractcode/Dockerfile
+      dockerfile: ./example_cc/Dockerfile
       args:
         buildno: 3
     ports: 
       - "50053:50053"
 
-  # db:
-  #   image: couchdb:2.3.0
-  #   ports: 5984
-  #   networks: 
-  #     - backend
-  #   deploy:
-  #     replicas: 1
-  #     restart_policy:
-  #       condition: on-failure
+  gossip:
+    build:
+      context: ./
+      dockerfile: ./gossip/Dockerfile
+      args:
+        buildno: 4
+    ports:
+      - "50052:50052"
+
+  orderer:
+    build:
+      context: ./
+      dockerfile: ./orderer/Dockerfile
+      args:
+        buildno: 5
+    ports: 
+      - "50054:50054"
+

@@ -14,28 +14,31 @@
 
 syntax = "proto3";
 
+package core;
 
-option java_multiple_files = true;
-option java_package = "io.grpc.examples.helloworld";
-option java_outer_classname = "HelloWorldProto";
-
-package helloworld;
+option go_package = "protoc/core";
 
 // import "study/GitHub/grpc/protoc/contractcode/contractcode.proto";
+import "google/protobuf/empty.proto";
+import "protoc/gossip/gossip.proto";
 
+// option go_package = ".";
 // The greeting service definition.
-service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply) {}
-  // Sends another greeting
-  rpc SayHelloAgain (HelloRequest) returns (HelloReply) {}
-
-  rpc ExecuteTransaction(Executetx) returns(ExecResponse) {}
+service PeerManager {
+	rpc InitContract(google.protobuf.Empty) returns (ExecResponse) {}
+	rpc ExecuteTransaction(Executetx) returns(ExecResponse) {}
+	rpc ValidateBlock(gossip.Block) returns(google.protobuf.Empty) {}
 }
 
 message Executetx {
 	string tx = 1;
 	repeated string Args = 2;
+	string invokerId = 3;
+	enum InvokerType {
+		CLIENT = 0;
+		PEER = 1;
+	}
+	InvokerType iType = 4;
 }
 
 message ExecResponse {
@@ -43,13 +46,3 @@ message ExecResponse {
 	bytes result=2;
 }
 
-
-// The request message containing the user's name.
-message HelloRequest {
-  string name = 1;
-}
-
-// The response message containing the greetings
-message HelloReply {
-  string message = 1;
-}

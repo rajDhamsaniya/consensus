@@ -22,55 +22,31 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"sync"
 	"time"
 
-	pb3 "../../protoc/contractcode"
-	pb2 "../../protoc/discovery"
-	pb "../../protoc/helloworld"
+	pb "study/GitHub/consensus/protoc/core"
+	pb2 "study/GitHub/consensus/protoc/discovery"
 
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/ptypes/empty"
+
 	"google.golang.org/grpc"
 )
 
 const (
-	peerAddress     = "10.0.2.15"
-	registryAddress = "10.0.2.15"
-	contractAddress = "10.0.2.15"
-	peerPort        = ":50051"
-	contractPort    = ":50053"
-	registryPort    = ":50052"
-	defaultName     = "world"
+	peerAddress      = "10.20.24.26"
+	registryAddress  = "10.20.24.26"
+	contractAddress  = "10.20.24.26"
+	discoveryAddress = "10.20.24.26"
+	discoveryPort    = ":50050"
+	peerPort         = ":50051"
+	contractPort     = ":50053"
+	registryPort     = ":50050"
+	defaultName      = "world"
 )
 
-func connServer(address string, wg *sync.WaitGroup) {
-	defer wg.Done()
-	conn, err := grpc.Dial((peerAddress + peerPort), grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
-	c := pb.NewGreeterClient(conn)
-
-	// Contact the server and print out its response.
-	name := defaultName
-	if len(os.Args) > 1 {
-		name = os.Args[1]
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
-	log.Printf("Greeting: %s", r.Message)
-
-}
-
 func fetchServerList() []*pb2.Registration {
-	var peer = make([](*pb2.Registration), 0)
-	fetchAll := true
+	// var peer = make([](*pb2.Registration), 0)
+	// fetchAll := true
 	conn, err := grpc.Dial((registryAddress + registryPort), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -80,7 +56,7 @@ func fetchServerList() []*pb2.Registration {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	r, err := c.FetchServiceLocation(ctx, &pb2.RegistrationFetchRequest{Registrations: peer, FetchAll: fetchAll})
+	r, err := c.FetchServiceLocation(ctx, &empty.Empty{})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
@@ -90,20 +66,20 @@ func fetchServerList() []*pb2.Registration {
 	return r.Registrations
 }
 
-func invokeTransaction(tx string, Args []byte) {
+func invokeTransaction(tx string, Args []string) {
 
 	conn, err := grpc.Dial((peerAddress + peerPort), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewGreeterClient(conn)
+	c := pb.NewPeerManagerClient(conn)
 
 	// Contact the server and print out its response.
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	r, err := c.ExecuteTransaction(ctx, &pb.Executetx{Tx: tx, Args: Args}, grpc.FailFast(false))
+	r, err := c.ExecuteTransaction(ctx, &pb.Executetx{Tx: tx, Args: Args, InvokerId: "userID", IType: pb.Executetx_CLIENT}, grpc.FailFast(false))
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
@@ -114,42 +90,41 @@ func invokeTransaction(tx string, Args []byte) {
 func demoTransfer() {
 	tx := "TransferAmount"
 
-	var a pb3.TransferMessage
-	a.Amount = 500
-	a.FromAccId = "790efe70-80f9-68c5-696d-c23a6552868c"
-	a.ToAccId = "7c3aaa44-0ab7-8abe-35db-871c376e968f"
-	a.UserId = "790efe70-80f9-68c5-696d-c23a6552868c"
+	arr := make([]string, 0)
+	arr = append(arr, "42915f0f-11eb-431d-9416-4ea2da3b85bb")
+	arr = append(arr, "42915f0f-11eb-431d-9416-4ea2da3b85bb")
+	arr = append(arr, "6a21d603-8fda-48b7-b7f1-bee772979a40")
+	arr = append(arr, "500")
+	// a.FromAccId = "790efe70-80f9-68c5-696d-c23a6552868c"
+	// a.ToAccId = "7c3aaa44-0ab7-8abe-35db-871c376e968f"
+	// a.UserId = "790efe70-80f9-68c5-696d-c23a6552868c"
 
-	Args, err := proto.Marshal(&a)
-	if err != nil {
-		fmt.Println(err)
-	}
-	invokeTransaction(tx, Args)
+	invokeTransaction(tx, arr)
 }
 
 func demoAddUser(num int, arr []string) {
 
 	tx := "AddUser"
-	var a pb3.UserInfo
+	// var a pb3.UserInfo
 
-	for i := 1; i <= num; i++ {
-		a.UserName = arr[i-1]
-		a.Balance = 5000
-		Args, err := proto.Marshal(&a)
-		if err != nil {
-			fmt.Println(err)
-		}
-		invokeTransaction(tx, Args)
-	}
+	// for i := 1; i <= num; i++ {
+	// 	a.UserName = arr[i-1]
+	// 	a.Balance = 5000
+	// 	//Args, err := proto.Marshal(&a)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	invokeTransaction(tx, arr)
+	// }
 }
 
 func main() {
 	// var peerList = make([](*pb2.Registration), 0)
 	// peerList = fetchServerList()
-	// fmt.Println(peerList)
+	// 	fmt.Println(peerList)
 	// num := 4
-	// array := []string{"qwe", "asd", "zxc", "iop"}
-	//demoAddUser(num, array)
+	// array := []string{"asd", "5000000"}
+	// demoAddUser(num, array)
 
 	demoTransfer()
 

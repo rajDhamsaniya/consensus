@@ -1,0 +1,23 @@
+syntax = "proto3";
+package gossip;
+
+import "google/protobuf/empty.proto";
+option go_package = "protoc/gossip";
+// import "./contractcode/contractcode.proto";
+
+service Gossip{
+	
+	rpc Deliver(Block) returns (google.protobuf.Empty) {}
+}
+
+message EndorsedTx {
+	repeated string Sign = 1;
+	bytes Payload = 2;
+	string timeStamp = 3;
+}
+
+message Block {
+	repeated EndorsedTx bunch = 1;
+	string Sign = 2;
+	string OffSet = 3;
+}

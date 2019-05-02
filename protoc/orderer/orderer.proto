@@ -1,0 +1,31 @@
+syntax = "proto3";
+package orderer;
+
+import "google/protobuf/empty.proto";
+import "protoc/gossip/gossip.proto";
+// import "./contractcode/contractcode.proto";
+
+service Orderer{
+	
+	rpc SubmitTx(EndorsedTx) returns (google.protobuf.Empty) {}
+
+	rpc GetBlocks(BlockId) returns (stream gossip.Block){}
+
+	rpc GetSpecificBlock(BlockId) returns (gossip.Block) {}
+}
+
+message EndorsedTx {
+	repeated string Sign = 1;
+	bytes Payload = 2;
+	string timeStamp = 3;
+}
+
+message BlockId {
+	string OffSet = 1;
+}
+
+message Block {
+	repeated EndorsedTx bunch = 1;
+	string Sign = 2;
+	string OffSet = 3;
+}

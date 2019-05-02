@@ -2,13 +2,16 @@
 syntax = "proto3";
 
 package registry;
+
+import "google/protobuf/empty.proto";
 // here we define the service and methods we're going to use later on
 // to do the registration process
 service Registry {
   rpc Register (Registration) returns (RegisterResponse);
+  
   rpc Unregister (Registration) returns (RegisterResponse);
 
-  rpc fetchServiceLocation (RegistrationFetchRequest) returns (RegistrationList);
+  rpc fetchServiceLocation (google.protobuf.Empty) returns (RegistrationList);
 }
 // we define what a registration needs to have
 // all optional and self explanatory
@@ -21,12 +24,7 @@ message Registration {
 message RegistrationList {
   repeated Registration registrations = 1;
 }
-// w/ this message we define what the server needs
-// to know what you want to have
-message RegistrationFetchRequest {
-  repeated Registration registrations = 1;
-  bool fetchAll = 2;
-}
+
 // simple response when you sign up
 message RegisterResponse {
   string message = 1;

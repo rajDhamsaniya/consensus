@@ -26,9 +26,7 @@ COPY ./ /discovery
 
 RUN pwd
 
-RUN ls -la
-
-RUN protoc -I protoc/discovery protoc/discovery/discovery.proto --go_out=plugins=grpc:discovery
+RUN protoc -I . protoc/discovery/discovery.proto --go_out=plugins=grpc:$GOPATH/src
 
 RUN go build -o registry discovery/discovery_server.go
 
